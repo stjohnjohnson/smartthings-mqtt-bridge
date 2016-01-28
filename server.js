@@ -15,11 +15,28 @@ var winston = require('winston'),
     fs = require('fs'),
     request = require('request');
 
-var config = yaml.safeLoad(fs.readFileSync('config.yml')),
+var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd();
+
+var config = loadConfiguration(),
     app = express(),
     client,
     subscription,
     history = {};
+
+/**
+ * Load user configuration (or create it)
+ * @method loadConfiguration
+ * @return {Object} Configuration
+ */
+function loadConfiguration() {
+    var config_file = path.join(CONFIG_DIR, 'config.yml');
+
+    if (!fs.existsSync(config_file)) {
+        fs.writeFileSync(config_file, fs.readFileSync(path.join(__dirname, '_config.yml')));
+    }
+
+    return yaml.safeLoad(fs.readFileSync(config_file));
+}
 
 /**
  * Handle Device Change/Push event from SmartThings
@@ -83,7 +100,7 @@ function handleSubscribeEvent(req, res) {
     subscription.callback = req.body.callback;
 
     // Store config on disk
-    jsonfile.writeFile('subscription.json', subscription, function () {
+    jsonfile.writeFile(path.join(CONFIG_DIR, 'subscription.json'), subscription, { spaces: 4 }, function () {
         // Turtles
         winston.info('Subscribing to ' + subscription.topics.join(', '));
         client.subscribe(subscription.topics, function () {
@@ -141,7 +158,7 @@ async.series([
     },
     function loadSavedSubscriptions(next) {
         winston.info('Loading Saved Subscriptions');
-        jsonfile.readFile('subscription.json', function (error, config) {
+        jsonfile.readFile(path.join(CONFIG_DIR, 'subscription.json'), function (error, config) {
             if (error) {
                 winston.warn('No stored subscription found');
                 return next();
@@ -159,7 +176,7 @@ async.series([
         app.use(expressWinston.logger({
             transports: [
                 new winston.transports.File({
-                    filename: path.join(process.cwd(), 'access.log'),
+                    filename: path.join(CONFIG_DIR, 'access.log'),
                     json: false
                 })
             ]
@@ -191,7 +208,7 @@ async.series([
         app.use(expressWinston.errorLogger({
             transports: [
                 new winston.transports.File({
-                    filename: path.join(process.cwd(), 'error.log'),
+                    filename: path.join(CONFIG_DIR, 'error.log'),
                     json: false
                 })
             ]
@@ -204,11 +221,11 @@ async.series([
             }
         });
 
-        app.listen(config.port, next);
+        app.listen(8080, next);
     }
 ], function (error) {
     if (error) {
         return winston.error(error);
     }
-    winston.info('Listening at http://localhost:%s', config.port);
+    winston.info('Listening at http://localhost:8080');
 });

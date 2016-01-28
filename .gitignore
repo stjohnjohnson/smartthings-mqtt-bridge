@@ -34,3 +34,4 @@ node_modules
 
 *.log
 subscription.json
+config.yml
