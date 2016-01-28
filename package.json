@@ -1,0 +1,38 @@
+{
+  "name": "MQTTBridge",
+  "version": "1.0.0",
+  "description": "Bridge between SmartThings and an MQTT broker",
+  "main": "server.js",
+  "scripts": {
+    "test": "jenkins-mocha",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stjohnjohnson/smartthings-mqtt-bridge.git"
+  },
+  "keywords": [
+    "smartthings",
+    "mqtt",
+    "broker"
+  ],
+  "author": "St. John Johnson <st.john.johnson@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stjohnjohnson/smartthings-mqtt-bridge/issues"
+  },
+  "homepage": "https://github.com/stjohnjohnson/smartthings-mqtt-bridge",
+  "dependencies": {
+    "async": "^1.5.2",
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "express-joi-validator": "^2.0.0",
+    "express-winston": "^1.2.0",
+    "joi": "^6.10.0",
+    "js-yaml": "^3.4.3",
+    "jsonfile": "^2.2.3",
+    "mqtt": "^1.7.0",
+    "request": "^2.65.0",
+    "winston": "^2.0.0"
+  }
+}
