@@ -66,20 +66,10 @@ def setNetworkAddress() {
     }
 }
 
-// The device is installed!
-def installed() {
-    log.debug "Installed with settings: ${settings}"
-    setNetworkAddress()
-}
-
-// The device is updated!
-def updated() {
-    log.debug "Updated with settings: ${settings}"
-    setNetworkAddress()
-}
-
 // Parse events from the Bridge
 def parse(String description) {
+    setNetworkAddress()
+
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
 
@@ -89,6 +79,7 @@ def parse(String description) {
 // Send message to the Bridge
 def deviceNotification(message) {
     log.debug "Sending '${message}' to device"
+    setNetworkAddress()
 
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
