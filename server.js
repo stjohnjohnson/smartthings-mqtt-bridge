@@ -36,9 +36,17 @@ function handlePushEvent(req, res) {
     var topic = ['', 'smartthings', req.body.name, req.body.type].join('/'),
         value = req.body.value;
 
-    winston.info('Publishing ' + value + ' to ' + topic);
+    winston.info('Incoming message from SmartThings to ' + topic + ' ' + value);
 
+    if (history[topic] === value) {
+        winston.info('Skipping duplicate message');
+
+        return res.send({
+            'status': 'DUPLICATE'
+        });
+    }
     history[topic] = value;
+
     client.publish(topic, value, {
         retain: true
     }, function () {
@@ -77,6 +85,7 @@ function handleSubscribeEvent(req, res) {
     // Store config on disk
     jsonfile.writeFile('subscription.json', subscription, function () {
         // Turtles
+        winston.info('Subscribing to ' + subscription.topics.join(', '));
         client.subscribe(subscription.topics, function () {
             // All the way down
             res.send({
@@ -102,8 +111,8 @@ function parseMQTTMessage (topic, message) {
     history[topic] = message.toString();
 
     var pieces = topic.split('/'),
-        name = topic[2],
-        type = topic[3];
+        name = pieces[2],
+        type = pieces[3];
 
     request.post({
         url: 'http://' + subscription.callback,
@@ -124,6 +133,7 @@ async.series([
         winston.info('Connecting to MQTT');
         client = mqtt.connect('mqtt://' + config.mqtt.host);
         client.on('connect', function () {
+            // @TODO Not call this twice if we get disconnected
             next();
         });
         client.on('message', parseMQTTMessage);
