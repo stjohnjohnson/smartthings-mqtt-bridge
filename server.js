@@ -133,8 +133,9 @@ async.series([
         winston.info('Connecting to MQTT');
         client = mqtt.connect('mqtt://' + config.mqtt.host);
         client.on('connect', function () {
-            // @TODO Not call this twice if we get disconnected
             next();
+            // @TODO Not call this twice if we get disconnected
+            next = function () {};
         });
         client.on('message', parseMQTTMessage);
     },

@@ -33,7 +33,7 @@ definition(
 preferences {
     section ("Input") {
         input "switches", "capability.switch", title: "Switches", multiple: true
-        input "switchLevels", "capability.switchLevel", title: "Dimmers", multiple: true
+        input "levels", "capability.switchLevel", title: "Levels", multiple: true
         input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true
     }
 
@@ -67,7 +67,7 @@ def getDeviceNames(devices) {
 def initialize() {
     subscribe(powerMeters, "power", inputHandler)
     subscribe(switches, "switch", inputHandler)
-    subscribe(switchLevels, "level", inputHandler)
+    subscribe(levels, "level", inputHandler)
 
     subscribe(bridge, "message", bridgeHandler)
 
@@ -78,7 +78,7 @@ def initialize() {
             devices: [
                 power: getDeviceNames(powerMeters),
                 switch: getDeviceNames(switches),
-                level: getDeviceNames(switchLevels)
+                level: getDeviceNames(levels)
             ]
         ]
     ])
@@ -89,19 +89,37 @@ def initialize() {
 }
 
 def bridgeHandler(evt) {
-    def json = new groovy.json.JsonOutput().toJson([
-        deviceId: evt.deviceId,
-      	name: evt.displayName,
-        value: evt.value,
-        type: evt.name,
-        date: evt.isoDate
-    ])
+    def json = new JsonSlurper().parseText(evt.value)
+
+    switch (json.type) {
+        case "power":
+            // Do nothing, we can change nothing here
+            break
+        case "switch":
+            switches.each{device->
+                if (device.displayName == json.name) {
+                    if (json.value == 'on') {
+                        device.on();
+                    } else {
+                        device.off();
+                    }
+                }
+            }
+            break
+        case "level":
+            levels.each{device->
+                if (device.displayName == json.name) {
+                    device.setLevel(json.value);
+                }
+            }
+            break
+    }
 
     log.debug "Receiving device event from bridge: ${json}"
 }
 
 def inputHandler(evt) {
-    def json = new groovy.json.JsonOutput().toJson([
+    def json = new JsonOutput().toJson([
         path: '/push',
         body: [
             name: evt.displayName,

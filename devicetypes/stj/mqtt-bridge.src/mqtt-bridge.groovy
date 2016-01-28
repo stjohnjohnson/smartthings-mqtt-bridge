@@ -18,6 +18,7 @@
  */
 
 import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 
 metadata {
     definition (name: "MQTT Bridge", namespace: "stj", author: "St. John Johnson and Jeremiah Wuenschel") {
@@ -82,10 +83,7 @@ def parse(String description) {
     log.debug "Parsing '${description}'"
     def msg = parseLanMessage(description)
 
-    log.debug "data ${msg.data}"
-    log.debug "headers ${msg.headers}"
-
-    return createEvent(name: "message", value: "${msg.data}")
+    return createEvent(name: "message", value: new JsonOutput().toJson(msg.data))
 }
 
 // Send message to the Bridge
