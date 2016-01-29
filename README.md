@@ -72,8 +72,7 @@ We'll be adding additional fields as this service progresses (port, username, pa
 7. Watch as MQTT is populated with events from your devices
 
 
-
- [dt]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/smartapps/stj/mqtt-bridge.src/mqtt-bridge.groovy
+ [dt]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/devicetypes/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [app]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/smartapps/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [ide-dt]: https://graph.api.smartthings.com/ide/devices
  [ide-app]: https://graph.api.smartthings.com/ide/apps
