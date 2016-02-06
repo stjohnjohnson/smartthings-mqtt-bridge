@@ -32,9 +32,10 @@ definition(
 
 preferences {
     section ("Input") {
-        input "switches", "capability.switch", title: "Switches", multiple: true
-        input "levels", "capability.switchLevel", title: "Levels", multiple: true
-        input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true
+        input "switches", "capability.switch", title: "Switches", multiple: true, required: false
+        input "levels", "capability.switchLevel", title: "Levels", multiple: true, required: false
+        input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true, required: false
+        input "motionSensors", "capability.motionSensor", title: "Motion Sensors", multiple: true, required: false
     }
 
     section ("Bridge") {
@@ -45,13 +46,16 @@ preferences {
 def installed() {
     log.debug "Installed with settings: ${settings}"
 
+    runEvery15Minutes(initialize)
     initialize()
 }
 
 def updated() {
     log.debug "Updated with settings: ${settings}"
 
+    // Unsubscribe from all events
     unsubscribe()
+    // Subscribe to stuff
     initialize()
 }
 
@@ -65,18 +69,27 @@ def getDeviceNames(devices) {
 }
 
 def initialize() {
+    // Subscribe to new events from devices
     subscribe(powerMeters, "power", inputHandler)
+    subscribe(motionSensors, "motion", inputHandler)
     subscribe(switches, "switch", inputHandler)
     subscribe(levels, "level", inputHandler)
 
+    // Subscribe to events from the bridge
     subscribe(bridge, "message", bridgeHandler)
 
-    // Updating subscription
+    // Update the bridge
+    updateSubscription()
+}
+
+// Update the bridge's subscription
+def updateSubscription() {
     def json = new groovy.json.JsonOutput().toJson([
         path: '/subscribe',
         body: [
             devices: [
                 power: getDeviceNames(powerMeters),
+                motion: getDeviceNames(motionSensors),
                 switch: getDeviceNames(switches),
                 level: getDeviceNames(levels)
             ]
@@ -88,11 +101,13 @@ def initialize() {
     bridge.deviceNotification(json)
 }
 
+// Receive an event from the bridge
 def bridgeHandler(evt) {
     def json = new JsonSlurper().parseText(evt.value)
 
     switch (json.type) {
         case "power":
+        case "motion":
             // Do nothing, we can change nothing here
             break
         case "switch":
@@ -118,6 +133,7 @@ def bridgeHandler(evt) {
     log.debug "Receiving device event from bridge: ${json}"
 }
 
+// Receive an event from a device
 def inputHandler(evt) {
     def json = new JsonOutput().toJson([
         path: '/push',
@@ -129,6 +145,5 @@ def inputHandler(evt) {
     ])
 
     log.debug "Forwarding device event to bridge: ${json}"
-
     bridge.deviceNotification(json)
 }

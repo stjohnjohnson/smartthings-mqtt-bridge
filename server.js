@@ -23,6 +23,12 @@ var config = loadConfiguration(),
     subscription,
     history = {};
 
+// Write all events to disk as well
+winston.add(winston.transports.File, {
+    filename: path.join(CONFIG_DIR, 'events.log'),
+    json: false
+});
+
 /**
  * Load user configuration (or create it)
  * @method loadConfiguration
@@ -139,8 +145,11 @@ function parseMQTTMessage (topic, message) {
             value: message.toString()
         }
     }, function (error, resp) {
-        // @TODO handle the response from SmartThings
-        winston.log(error, resp.statusCode);
+        if (error) {
+            // @TODO handle the response from SmartThings
+            winston.error('Error from SmartThings Hub: %s', error.toString());
+            winston.error(JSON.stringify(resp, null, 4));
+        }
     });
 }
 

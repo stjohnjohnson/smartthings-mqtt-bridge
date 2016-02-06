@@ -1,3 +1,4 @@
 ---
 mqtt:
-    host: localhost
+    # Specify your MQTT Broker's hostname or IP address here
+    host: mqtt
