@@ -37,7 +37,7 @@ $ mqtt pub -t '/SmartThings/Fireplace Lights/switch'  -m 'off'
 
 # Configuration
 
-The bridge has one yaml file for configuration.  Currently we only have one item you can set: 
+The bridge has one yaml file for configuration.  Currently we only have one item you can set:
 
 ```
 ---
@@ -52,7 +52,7 @@ We'll be adding additional fields as this service progresses (port, username, pa
 1. Run the Docker container
 
     ```
-    $ docker run \ 
+    $ docker run \
         -d \
         --name="mqtt-bridge" \
         -v /opt/mqtt-bridge:/config \
@@ -71,9 +71,42 @@ We'll be adding additional fields as this service progresses (port, username, pa
 6. Configure the Smart App (via the Native App) with the devices you want to share and the Device Handler you just installed as the bridge
 7. Watch as MQTT is populated with events from your devices
 
+## Docker Compose
+
+If you want to bundle everything together, you can use [Docker Compose][docker-compose].
+
+Just create a file called `docker-compose.yml` with this contents:
+```yaml
+mqtt:
+    image: matteocollina/mosca
+    ports:
+        - 1883:1883
+
+mqttbridge:
+    image: stjohnjohnson/smartthings-mqtt-bridge
+    volumes:
+        - ./mqtt-bridge:/config
+    ports:
+        - 8080:8080
+    links:
+        - mqtt
+
+homeassistant:
+    image: balloob/home-assistant
+    ports:
+        - 80:80
+    volumes:
+        - ./home-assistant:/config
+        - /etc/localtime:/etc/localtime:ro
+    links:
+        - mqtt
+```
+
+This creates a directory called `./mqtt-bridge/` to store configuration for the bridge.  It also creates a directory `./home-assistant` to store configuration for HA.
 
  [dt]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/devicetypes/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [app]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/smartapps/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [ide-dt]: https://graph.api.smartthings.com/ide/devices
  [ide-app]: https://graph.api.smartthings.com/ide/apps
  [ha-issue]: https://github.com/balloob/home-assistant/issues/604
+ [docker-compose]: https://docs.docker.com/compose/
