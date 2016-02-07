@@ -1,9 +1,10 @@
 # SmartThings MQTT Bridge
 ***System to share and control SmartThings device states in MQTT.***
 
-[![GitHub tag](https://img.shields.io/github/tag/stjohnjohnson/smartthings-mqtt-bridge.svg)](https://github.com/stjohnjohnson/smartthings-mqtt-bridge/releases)
+[![GitHub Tag](https://img.shields.io/github/tag/stjohnjohnson/smartthings-mqtt-bridge.svg)](https://github.com/stjohnjohnson/smartthings-mqtt-bridge/releases)
 [![Docker Pulls](https://img.shields.io/docker/pulls/stjohnjohnson/smartthings-mqtt-bridge.svg)](https://hub.docker.com/r/stjohnjohnson/smartthings-mqtt-bridge/)
 [![Docker Stars](https://img.shields.io/docker/stars/stjohnjohnson/smartthings-mqtt-bridge.svg)](https://hub.docker.com/r/stjohnjohnson/smartthings-mqtt-bridge/)
+[![Wercker Status](https://app.wercker.com/status/f2df197ea40f89b7eda771e67b4a4e1e/s/master "wercker status")](https://app.wercker.com/project/bykey/f2df197ea40f89b7eda771e67b4a4e1e)
 
 This project was spawned by the desire to [control SmartThings from within Home Assistant][ha-issue].  Since Home Assistant already supports MQTT, we chose to go and build a bridge between SmartThings and MQTT.
 

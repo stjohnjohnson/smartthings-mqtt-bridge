@@ -4,7 +4,9 @@
   "description": "Bridge between SmartThings and an MQTT broker",
   "main": "server.js",
   "scripts": {
-    "test": "jenkins-mocha",
+    "pretest": "npm run hint && npm run style",
+    "hint": "jshint --show-non-errors *.js",
+    "style": "jscs .",
     "start": "node server.js"
   },
   "repository": {
@@ -34,5 +36,9 @@
     "mqtt": "^1.7.0",
     "request": "^2.65.0",
     "winston": "^2.0.0"
+  },
+  "devDependencies": {
+    "jscs": "^2.9.0",
+    "jshint": "^2.9.1"
   }
 }
