@@ -59,15 +59,7 @@ function handlePushEvent(req, res) {
     var topic = ['', 'smartthings', req.body.name, req.body.type].join('/'),
         value = req.body.value;
 
-    winston.info('Incoming message from SmartThings to ' + topic + ' ' + value);
-
-    if (history[topic] === value) {
-        winston.info('Skipping duplicate message');
-
-        return res.send({
-            'status': 'DUPLICATE'
-        });
-    }
+    winston.info('Incoming message from SmartThings: %s = %s', topic, value);
     history[topic] = value;
 
     client.publish(topic, value, {
@@ -125,13 +117,13 @@ function handleSubscribeEvent(req, res) {
  * @param  {String} message Contents of the event
  */
 function parseMQTTMessage (topic, message) {
-    winston.info('Incoming message from: ' + topic, message.toString());
-
-    if (history[topic] === message.toString()) {
-        winston.info('Skipping duplicate message');
+    var contents = message.toString();
+    if (history[topic] === contents) {
+        winston.debug('Skipping duplicate message from: %s = %s', topic, contents);
         return;
     }
-    history[topic] = message.toString();
+    winston.info('Incoming message from MQTT: %s = %s', topic, contents);
+    history[topic] = contents;
 
     var pieces = topic.split('/'),
         name = pieces[2],
@@ -142,7 +134,7 @@ function parseMQTTMessage (topic, message) {
         json: {
             name: name,
             type: type,
-            value: message.toString()
+            value: contents
         }
     }, function (error, resp) {
         if (error) {
