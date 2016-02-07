@@ -16,22 +16,22 @@ This project was spawned by the desire to [control SmartThings from within Home 
 Events about a device (power, level, switch) are sent to MQTT using the following format:
 
 ```
-/SmartThings/{DEVICE_NAME}/${ATTRIBUTE}
+/smartthings/{DEVICE_NAME}/${ATTRIBUTE}
 ```
 
 For example, my Dimmer Z-Wave Lamp is called "Fireplace Lights" in SmartThings.  The following topics are published:
 
 ```
 # Brightness (0-99)
-/SmartThings/Fireplace Lights/level
+/smartthings/Fireplace Lights/level
 # Switch State (on|off)
-/SmartThings/Fireplace Lights/switch
+/smartthings/Fireplace Lights/switch
 ```
 
 The Bridge also subscribes to changes in these topics, so that you can update the device via MQTT.
 
 ```
-$ mqtt pub -t '/SmartThings/Fireplace Lights/switch'  -m 'off'
+$ mqtt pub -t '/smartthings/Fireplace Lights/switch'  -m 'off'
 # Light goes off in SmartThings
 ```
 
