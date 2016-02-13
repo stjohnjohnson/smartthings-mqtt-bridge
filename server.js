@@ -34,14 +34,15 @@ winston.add(winston.transports.File, {
  * @method loadConfiguration
  * @return {Object} Configuration
  */
-function loadConfiguration() {
-    var config_file = path.join(CONFIG_DIR, 'config.yml');
+function loadConfiguration () {
+    var configFile = path.join(CONFIG_DIR, 'config.yml'),
+        sampleFile = path.join(__dirname, '_config.yml');
 
-    if (!fs.existsSync(config_file)) {
-        fs.writeFileSync(config_file, fs.readFileSync(path.join(__dirname, '_config.yml')));
+    if (!fs.existsSync(configFile)) {
+        fs.writeFileSync(configFile, fs.readFileSync(sampleFile));
     }
 
-    return yaml.safeLoad(fs.readFileSync(config_file));
+    return yaml.safeLoad(fs.readFileSync(configFile));
 }
 
 /**
@@ -55,7 +56,7 @@ function loadConfiguration() {
  * @param  {String}  req.body.value Value of device (e.g. "on")
  * @param  {Result}  res            Result Object
  */
-function handlePushEvent(req, res) {
+function handlePushEvent (req, res) {
     var topic = ['', 'smartthings', req.body.name, req.body.type].join('/'),
         value = req.body.value;
 
@@ -66,7 +67,7 @@ function handlePushEvent(req, res) {
         retain: true
     }, function () {
         res.send({
-            'status': 'OK'
+            status: 'OK'
         });
     });
 }
@@ -81,7 +82,7 @@ function handlePushEvent(req, res) {
  * @param  {String}  req.body.callback Host and port for SmartThings Hub
  * @param  {Result}  res               Result Object
  */
-function handleSubscribeEvent(req, res) {
+function handleSubscribeEvent (req, res) {
     subscription = {
         topics: [],
         callback: ''
@@ -90,7 +91,8 @@ function handleSubscribeEvent(req, res) {
     // Subscribe to all events
     Object.keys(req.body.devices).forEach(function (type) {
         req.body.devices[type].forEach(function (device) {
-            subscription.topics.push(['', 'smartthings', device, type].join('/'));
+            var topicName = ['', 'smartthings', device, type].join('/');
+            subscription.topics.push(topicName);
         });
     });
 
@@ -98,13 +100,17 @@ function handleSubscribeEvent(req, res) {
     subscription.callback = req.body.callback;
 
     // Store config on disk
-    jsonfile.writeFile(path.join(CONFIG_DIR, 'subscription.json'), subscription, { spaces: 4 }, function () {
+    var subscriptionFile = path.join(CONFIG_DIR, 'subscription.json');
+    // @TODO convert to async.series
+    jsonfile.writeFile(subscriptionFile, subscription, {
+        spaces: 4
+    }, function () {
         // Turtles
         winston.info('Subscribing to ' + subscription.topics.join(', '));
         client.subscribe(subscription.topics, function () {
             // All the way down
             res.send({
-                'status': 'OK'
+                status: 'OK'
             });
         });
     });
@@ -147,7 +153,7 @@ function parseMQTTMessage (topic, message) {
 
 // Main flow
 async.series([
-    function connectToMQTT(next) {
+    function connectToMQTT (next) {
         winston.info('Connecting to MQTT');
         client = mqtt.connect('mqtt://' + config.mqtt.host);
         client.on('connect', function () {
@@ -157,7 +163,7 @@ async.series([
         });
         client.on('message', parseMQTTMessage);
     },
-    function loadSavedSubscriptions(next) {
+    function loadSavedSubscriptions (next) {
         winston.info('Loading Saved Subscriptions');
         jsonfile.readFile(path.join(CONFIG_DIR, 'subscription.json'), function (error, config) {
             if (error) {
@@ -168,7 +174,7 @@ async.series([
             client.subscribe(subscription.topics, next);
         });
     },
-    function setupApp(next) {
+    function setupApp (next) {
         winston.info('Configuring API');
         // Accept JSON
         app.use(bodyparser.json());
@@ -218,7 +224,7 @@ async.series([
         // Proper error messages with Joi
         app.use(function (err, req, res, next) {
             if (err.isBoom) {
-                 return res.status(err.output.statusCode).json(err.output.payload);
+                return res.status(err.output.statusCode).json(err.output.payload);
             }
         });
 
