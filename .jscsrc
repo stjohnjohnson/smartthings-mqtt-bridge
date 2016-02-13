@@ -9,5 +9,8 @@
         "beforeOpeningCurlyBrace": true,
         "beforeOpeningRoundBrace": true
     },
-    "maximumLineLength": 120
+    "maximumLineLength": 120,
+    "excludeFiles": [
+        "artifacts/**"
+    ]
 }

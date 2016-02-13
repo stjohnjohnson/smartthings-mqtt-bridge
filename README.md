@@ -17,33 +17,37 @@ This project was spawned by the desire to [control SmartThings from within Home 
 Events about a device (power, level, switch) are sent to MQTT using the following format:
 
 ```
-/smartthings/{DEVICE_NAME}/${ATTRIBUTE}
+{PREFACE}/{DEVICE_NAME}/${ATTRIBUTE}
 ```
+__PREFACE is defined as "smartthings" by default in your configuration__
 
 For example, my Dimmer Z-Wave Lamp is called "Fireplace Lights" in SmartThings.  The following topics are published:
 
 ```
 # Brightness (0-99)
-/smartthings/Fireplace Lights/level
+smartthings/Fireplace Lights/level
 # Switch State (on|off)
-/smartthings/Fireplace Lights/switch
+smartthings/Fireplace Lights/switch
 ```
 
 The Bridge also subscribes to changes in these topics, so that you can update the device via MQTT.
 
 ```
-$ mqtt pub -t '/smartthings/Fireplace Lights/switch'  -m 'off'
+$ mqtt pub -t 'smartthings/Fireplace Lights/switch'  -m 'off'
 # Light goes off in SmartThings
 ```
 
 # Configuration
 
-The bridge has one yaml file for configuration.  Currently we only have one item you can set:
+The bridge has one yaml file for configuration.  Currently we only have two items you can set:
 
 ```
 ---
 mqtt:
-  host: 192.168.1.200
+    # Specify your MQTT Broker's hostname or IP address here
+    host: mqtt
+    # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
+    preface: smartthings
 ```
 
 We'll be adding additional fields as this service progresses (port, username, password, etc).
