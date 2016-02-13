@@ -2,3 +2,5 @@
 mqtt:
     # Specify your MQTT Broker's hostname or IP address here
     host: mqtt
+    # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
+    preface: smartthings

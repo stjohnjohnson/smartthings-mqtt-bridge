@@ -13,19 +13,28 @@ var winston = require('winston'),
     yaml = require('js-yaml'),
     jsonfile = require('jsonfile'),
     fs = require('fs'),
+    semver = require('semver'),
     request = require('request');
 
-var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd();
+var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
+    CONFIG_FILE = path.join(CONFIG_DIR, 'config.yml'),
+    SAMPLE_FILE = path.join(__dirname, '_config.yml'),
+    STATE_FILE = path.join(CONFIG_DIR, 'state.json'),
+    EVENTS_LOG = path.join(CONFIG_DIR, 'events.log'),
+    ACCESS_LOG = path.join(CONFIG_DIR, 'access.log'),
+    ERROR_LOG = path.join(CONFIG_DIR, 'error.log'),
+    CURRENT_VERSION = require('./package').version;
 
-var config = loadConfiguration(),
-    app = express(),
+var app = express(),
     client,
-    subscription,
+    subscriptions = [],
+    callback = '',
+    config = {},
     history = {};
 
 // Write all events to disk as well
 winston.add(winston.transports.File, {
-    filename: path.join(CONFIG_DIR, 'events.log'),
+    filename: EVENTS_LOG,
     json: false
 });
 
@@ -35,14 +44,70 @@ winston.add(winston.transports.File, {
  * @return {Object} Configuration
  */
 function loadConfiguration () {
-    var configFile = path.join(CONFIG_DIR, 'config.yml'),
-        sampleFile = path.join(__dirname, '_config.yml');
-
-    if (!fs.existsSync(configFile)) {
-        fs.writeFileSync(configFile, fs.readFileSync(sampleFile));
+    if (!fs.existsSync(CONFIG_FILE)) {
+        winston.info('No previous configuration found, creating one');
+        fs.writeFileSync(CONFIG_FILE, fs.readFileSync(SAMPLE_FILE));
     }
 
-    return yaml.safeLoad(fs.readFileSync(configFile));
+    return yaml.safeLoad(fs.readFileSync(CONFIG_FILE));
+}
+
+/**
+ * Load the saved previous state from disk
+ * @method loadSavedState
+ * @return {Object} Configuration
+ */
+function loadSavedState () {
+    var output;
+    try {
+        output = jsonfile.readFileSync(STATE_FILE);
+    } catch (ex) {
+        winston.info('No previous state found, continuing');
+        output = {
+            subscriptions: [],
+            callback: '',
+            history: {},
+            version: '0.0.0'
+        };
+    }
+    return output;
+}
+
+/**
+ * Resubscribe on a periodic basis
+ * @method saveState
+ */
+function saveState () {
+    winston.info('Saving current state');
+    jsonfile.writeFileSync(STATE_FILE, {
+        subscriptions: subscriptions,
+        callback: callback,
+        history: history,
+        version: CURRENT_VERSION
+    }, {
+        spaces: 4
+    });
+}
+
+/**
+ * Migrate the configuration from the current version to the latest version
+ * @method migrateState
+ * @param  {String}     version Version the state was written in before
+ */
+function migrateState (version) {
+    // This is the previous default, but it's totally wrong
+    if (config.mqtt && !config.mqtt.preface) {
+        config.mqtt.preface = '/smartthings';
+    }
+
+    // Stuff was previously in subscription.json, load that and migrate it
+    if (semver.lt(version, '1.1.0')) {
+        var oldState = jsonfile.readFileSync(path.join(CONFIG_DIR, 'subscription.json'));
+        callback = oldState.callback;
+        subscriptions = oldState.topics;
+    }
+
+    saveState();
 }
 
 /**
@@ -57,7 +122,7 @@ function loadConfiguration () {
  * @param  {Result}  res            Result Object
  */
 function handlePushEvent (req, res) {
-    var topic = ['', 'smartthings', req.body.name, req.body.type].join('/'),
+    var topic = getTopicFor(req.body.name, req.body.type),
         value = req.body.value;
 
     winston.info('Incoming message from SmartThings: %s = %s', topic, value);
@@ -83,37 +148,39 @@ function handlePushEvent (req, res) {
  * @param  {Result}  res               Result Object
  */
 function handleSubscribeEvent (req, res) {
-    subscription = {
-        topics: [],
-        callback: ''
-    };
-
     // Subscribe to all events
-    Object.keys(req.body.devices).forEach(function (type) {
-        req.body.devices[type].forEach(function (device) {
-            var topicName = ['', 'smartthings', device, type].join('/');
-            subscription.topics.push(topicName);
+    subscriptions = [];
+    Object.keys(req.body.devices).forEach(function (property) {
+        req.body.devices[property].forEach(function (device) {
+            subscriptions.push(getTopicFor(device, property));
         });
     });
 
     // Store callback
-    subscription.callback = req.body.callback;
+    callback = req.body.callback;
 
-    // Store config on disk
-    var subscriptionFile = path.join(CONFIG_DIR, 'subscription.json');
-    // @TODO convert to async.series
-    jsonfile.writeFile(subscriptionFile, subscription, {
-        spaces: 4
-    }, function () {
+    // Store current state on disk
+    saveState(function (next) {
         // Turtles
-        winston.info('Subscribing to ' + subscription.topics.join(', '));
-        client.subscribe(subscription.topics, function () {
+        winston.info('Subscribing to ' + subscriptions.join(', '));
+        client.subscribe(subscriptions, function () {
             // All the way down
             res.send({
                 status: 'OK'
             });
         });
     });
+}
+
+/**
+ * Get the topic name for a given item
+ * @method getTopicFor
+ * @param  {String}    device   Device Name
+ * @param  {String}    property Property
+ * @return {String}             MQTT Topic name
+ */
+function getTopicFor (device, property) {
+    return [config.mqtt.preface, device, property].join('/');
 }
 
 /**
@@ -131,21 +198,39 @@ function parseMQTTMessage (topic, message) {
     winston.info('Incoming message from MQTT: %s = %s', topic, contents);
     history[topic] = contents;
 
-    var pieces = topic.split('/'),
-        name = pieces[2],
-        type = pieces[3];
+    // Remove the preface from the topic before splitting it
+    var pieces = topic.substr(config.mqtt.preface.length + 1).split('/'),
+        device = pieces[0],
+        property = pieces[1];
+
+
+    // If sending level data and the switch is off, don't send anything
+    // SmartThings will turn the device on (which is confusing)
+    if (property === 'level' && history[getTopicFor(device, 'switch')] === 'off') {
+        winston.info('Skipping level set due to device being off');
+        return;
+    }
+
+    // If sending switch data and there is already a level value, send level instead
+    // SmartThings will turn the device on
+    if (property === 'switch' && contents === 'on' && history[getTopicFor(device, 'level')] !== undefined) {
+        winston.info('Passing level instead of switch on');
+        property = 'level';
+        contents = history[getTopicFor(device, 'level')];
+    }
 
     request.post({
-        url: 'http://' + subscription.callback,
+        url: 'http://' + callback,
         json: {
-            name: name,
-            type: type,
+            name: device,
+            type: property,
             value: contents
         }
     }, function (error, resp) {
         if (error) {
             // @TODO handle the response from SmartThings
             winston.error('Error from SmartThings Hub: %s', error.toString());
+            winston.error(JSON.stringify(error, null, 4));
             winston.error(JSON.stringify(resp, null, 4));
         }
     });
@@ -153,29 +238,46 @@ function parseMQTTMessage (topic, message) {
 
 // Main flow
 async.series([
+    function loadFromDisk (next) {
+        var state;
+
+        winston.info('Loading configuration');
+        config = loadConfiguration();
+
+        winston.info('Loading previous state');
+        state = loadSavedState();
+        callback = state.callback;
+        subscriptions = state.subscriptions;
+        history = state.history;
+
+        winston.info('Perfoming configuration migration');
+        migrateState(state.version);
+
+        process.nextTick(next);
+    },
     function connectToMQTT (next) {
         winston.info('Connecting to MQTT');
+
         client = mqtt.connect('mqtt://' + config.mqtt.host);
+        client.on('message', parseMQTTMessage);
         client.on('connect', function () {
+            client.subscribe(subscriptions);
             next();
             // @TODO Not call this twice if we get disconnected
             next = function () {};
         });
-        client.on('message', parseMQTTMessage);
     },
-    function loadSavedSubscriptions (next) {
-        winston.info('Loading Saved Subscriptions');
-        jsonfile.readFile(path.join(CONFIG_DIR, 'subscription.json'), function (error, config) {
-            if (error) {
-                winston.warn('No stored subscription found');
-                return next();
-            }
-            subscription = config;
-            client.subscribe(subscription.topics, next);
-        });
+    function configureCron (next) {
+        winston.info('Configuring autosave');
+
+        // Save current state every 15 minutes
+        setInterval(saveState, 15 * 60 * 1000);
+
+        process.nextTick(next);
     },
     function setupApp (next) {
         winston.info('Configuring API');
+
         // Accept JSON
         app.use(bodyparser.json());
 
@@ -183,7 +285,7 @@ async.series([
         app.use(expressWinston.logger({
             transports: [
                 new winston.transports.File({
-                    filename: path.join(CONFIG_DIR, 'access.log'),
+                    filename: ACCESS_LOG,
                     json: false
                 })
             ]
@@ -215,7 +317,7 @@ async.series([
         app.use(expressWinston.errorLogger({
             transports: [
                 new winston.transports.File({
-                    filename: path.join(CONFIG_DIR, 'error.log'),
+                    filename: ERROR_LOG,
                     json: false
                 })
             ]
