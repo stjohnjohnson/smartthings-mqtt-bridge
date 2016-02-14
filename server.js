@@ -101,8 +101,9 @@ function migrateState (version) {
     }
 
     // Stuff was previously in subscription.json, load that and migrate it
-    if (semver.lt(version, '1.1.0')) {
-        var oldState = jsonfile.readFileSync(path.join(CONFIG_DIR, 'subscription.json'));
+    var SUBSCRIPTION_FILE = path.join(CONFIG_DIR, 'subscription.json');
+    if (semver.lt(version, '1.1.0') && fs.existsSync(SUBSCRIPTION_FILE)) {
+        var oldState = jsonfile.readFileSync(SUBSCRIPTION_FILE);
         callback = oldState.callback;
         subscriptions = oldState.topics;
     }
