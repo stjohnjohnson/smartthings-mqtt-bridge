@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "pretest": "npm run hint && npm run style",
+    "test": "jenkins-mocha",
     "hint": "jshint --show-non-errors *.js",
     "style": "jscs .",
     "start": "node server.js"
@@ -39,6 +40,7 @@
     "winston": "^2.0.0"
   },
   "devDependencies": {
+    "jenkins-mocha": "^2.5.0",
     "jscs": "^2.9.0",
     "jshint": "^2.9.1"
   }
