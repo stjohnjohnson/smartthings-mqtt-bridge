@@ -161,14 +161,13 @@ function handleSubscribeEvent (req, res) {
     callback = req.body.callback;
 
     // Store current state on disk
-    saveState(function (next) {
-        // Turtles
-        winston.info('Subscribing to ' + subscriptions.join(', '));
-        client.subscribe(subscriptions, function () {
-            // All the way down
-            res.send({
-                status: 'OK'
-            });
+    saveState();
+
+    // Subscribe to events
+    winston.info('Subscribing to ' + subscriptions.join(', '));
+    client.subscribe(subscriptions, function () {
+        res.send({
+            status: 'OK'
         });
     });
 }
@@ -262,7 +261,9 @@ async.series([
         client = mqtt.connect('mqtt://' + config.mqtt.host);
         client.on('message', parseMQTTMessage);
         client.on('connect', function () {
-            client.subscribe(subscriptions);
+            if (subscriptions.length > 0) {
+                client.subscribe(subscriptions);
+            }
             next();
             // @TODO Not call this twice if we get disconnected
             next = function () {};
