@@ -4,3 +4,6 @@ mqtt:
     host: mqtt
     # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
     preface: smartthings
+
+# Port number to listen on
+port: 8080

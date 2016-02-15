@@ -39,7 +39,7 @@ $ mqtt pub -t 'smartthings/Fireplace Lights/switch'  -m 'off'
 
 # Configuration
 
-The bridge has one yaml file for configuration.  Currently we only have two items you can set:
+The bridge has one yaml file for configuration.  Currently we only have three items you can set:
 
 ```
 ---
@@ -48,9 +48,13 @@ mqtt:
     host: mqtt
     # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
     preface: smartthings
+
+# Port number to listen on
+port: 8080
+
 ```
 
-We'll be adding additional fields as this service progresses (port, username, password, etc).
+We'll be adding additional fields as this service progresses (mqtt port, username, password, etc).
 
 # Usage
 
