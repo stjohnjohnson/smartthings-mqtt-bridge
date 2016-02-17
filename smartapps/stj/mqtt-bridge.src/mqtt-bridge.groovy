@@ -38,6 +38,10 @@ preferences {
         input "motionSensors", "capability.motionSensor", title: "Motion Sensors", multiple: true, required: false
         input "contactSensors", "capability.contactSensor", title: "Contact Sensors", multiple: true, required: false
         input "temperatureSensors", "capability.temperatureMeasurement", title: "Temperature Sensors", multiple: true, required: false
+        input "humiditySensors", "capability.relativeHumidityMeasurement", title: "Humidity Sensors", multiple: true, required: false
+        input "waterSensors", "capability.waterSensor", title: "Water Sensors", multiple: true, required: false
+        input "windowShades", "capability.windowShade", title: "Window Shades/Blinds", multiple: true, required: false
+        input "garageDoors", "capability.garageDoorControl", title: "Garage Doors", multiple: true, required: false
     }
 
     section ("Bridge") {
@@ -78,6 +82,10 @@ def initialize() {
     subscribe(levels, "level", inputHandler)
     subscribe(contactSensors, "contact", inputHandler)
     subscribe(temperatureSensors, "temperature", inputHandler)  
+    subscribe(humiditySensors, "humidity", inputHandler)    
+    subscribe(waterSensors, "water", inputHandler)  
+    subscribe(windowShades, "windowShade", inputHandler)    
+    subscribe(garageDoors, "door", inputHandler)
 
     // Subscribe to events from the bridge
     subscribe(bridge, "message", bridgeHandler)
@@ -97,7 +105,12 @@ def updateSubscription() {
                 switch: getDeviceNames(switches),
                 level: getDeviceNames(levels),
                 contact: getDeviceNames(contactSensors),
-                temperature: getDeviceNames(temperatureSensors)
+                temperature: getDeviceNames(temperatureSensors),
+                humidity: getDeviceNames(humiditySensors),
+                water: getDeviceNames(waterSensors),
+                windowShade: getDeviceNames(windowShades),
+                door: getDeviceNames(garageDoors)
+
             ]
         ]
     ])
@@ -115,6 +128,8 @@ def bridgeHandler(evt) {
         case "power":
         case "contact":
         case "temperature":
+        case "humidity":
+        case "water":
         case "motion":
             // Do nothing, we can change nothing here
             break
@@ -125,6 +140,28 @@ def bridgeHandler(evt) {
                         device.on();
                     } else {
                         device.off();
+                    }
+                }
+            }
+            break
+        case "windowShade":
+            windowShades.each{device->
+                if (device.displayName == json.name) {
+                    if (json.value == 'open') {
+                        device.open()
+                    } else {
+                        device.close()
+                    }
+                }
+            }
+            break
+        case "door":
+            garageDoors.each{device->
+                if (device.displayName == json.name) {
+                    if (json.value == 'open') {
+                        device.open()
+                    } else {
+                        device.close()
                     }
                 }
             }
