@@ -37,6 +37,7 @@ preferences {
         input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true, required: false
         input "motionSensors", "capability.motionSensor", title: "Motion Sensors", multiple: true, required: false
         input "contactSensors", "capability.contactSensor", title: "Contact Sensors", multiple: true, required: false
+        input "temperatureSensors", "capability.temperatureMeasurement", title: "Temperature Sensors", multiple: true, required: false
     }
 
     section ("Bridge") {
@@ -76,6 +77,7 @@ def initialize() {
     subscribe(switches, "switch", inputHandler)
     subscribe(levels, "level", inputHandler)
     subscribe(contactSensors, "contact", inputHandler)
+    subscribe(temperatureSensors, "temperature", inputHandler)  
 
     // Subscribe to events from the bridge
     subscribe(bridge, "message", bridgeHandler)
@@ -94,7 +96,8 @@ def updateSubscription() {
                 motion: getDeviceNames(motionSensors),
                 switch: getDeviceNames(switches),
                 level: getDeviceNames(levels),
-                contact: getDeviceNames(contactSensors)
+                contact: getDeviceNames(contactSensors),
+                temperature: getDeviceNames(temperatureSensors)
             ]
         ]
     ])
@@ -111,6 +114,7 @@ def bridgeHandler(evt) {
     switch (json.type) {
         case "power":
         case "contact":
+        case "temperature":
         case "motion":
             // Do nothing, we can change nothing here
             break
