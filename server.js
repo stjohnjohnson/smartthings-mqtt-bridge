@@ -100,6 +100,11 @@ function migrateState (version) {
         config.mqtt.preface = '/smartthings';
     }
 
+    // Default port
+    if (!config.port) {
+        config.port = 8080;
+    }
+
     // Stuff was previously in subscription.json, load that and migrate it
     var SUBSCRIPTION_FILE = path.join(CONFIG_DIR, 'subscription.json');
     if (semver.lt(version, '1.1.0') && fs.existsSync(SUBSCRIPTION_FILE)) {
@@ -241,6 +246,7 @@ async.series([
     function loadFromDisk (next) {
         var state;
 
+        winston.info('Starting SmartThings MQTT Bridge - v%s', CURRENT_VERSION);
         winston.info('Loading configuration');
         config = loadConfiguration();
 
@@ -256,7 +262,7 @@ async.series([
         process.nextTick(next);
     },
     function connectToMQTT (next) {
-        winston.info('Connecting to MQTT');
+        winston.info('Connecting to MQTT at mqtt://%s', config.mqtt.host);
 
         client = mqtt.connect('mqtt://' + config.mqtt.host);
         client.on('message', parseMQTTMessage);
@@ -332,11 +338,11 @@ async.series([
             }
         });
 
-        app.listen(8080, next);
+        app.listen(config.port, next);
     }
 ], function (error) {
     if (error) {
         return winston.error(error);
     }
-    winston.info('Listening at http://localhost:8080');
+    winston.info('Listening at http://localhost:%s', config.port);
 });
