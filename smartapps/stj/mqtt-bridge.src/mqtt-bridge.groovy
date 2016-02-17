@@ -1,7 +1,7 @@
 /**
  *  MQTT Bridge
  *
- * 	Authors
+ *  Authors
  *   - st.john.johnson@gmail.com
  *   - jeremiah.wuenschel@gmail.com
  *
@@ -36,6 +36,7 @@ preferences {
         input "levels", "capability.switchLevel", title: "Levels", multiple: true, required: false
         input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true, required: false
         input "motionSensors", "capability.motionSensor", title: "Motion Sensors", multiple: true, required: false
+        input "contactSensors", "capability.contactSensor", title: "Contact Sensors", multiple: true, required: false
     }
 
     section ("Bridge") {
@@ -74,6 +75,7 @@ def initialize() {
     subscribe(motionSensors, "motion", inputHandler)
     subscribe(switches, "switch", inputHandler)
     subscribe(levels, "level", inputHandler)
+    subscribe(contactSensors, "contact", inputHandler)
 
     // Subscribe to events from the bridge
     subscribe(bridge, "message", bridgeHandler)
@@ -91,7 +93,8 @@ def updateSubscription() {
                 power: getDeviceNames(powerMeters),
                 motion: getDeviceNames(motionSensors),
                 switch: getDeviceNames(switches),
-                level: getDeviceNames(levels)
+                level: getDeviceNames(levels),
+                contact: getDeviceNames(contactSensors)
             ]
         ]
     ])
@@ -107,6 +110,7 @@ def bridgeHandler(evt) {
 
     switch (json.type) {
         case "power":
+        case "contact":
         case "motion":
             // Do nothing, we can change nothing here
             break
