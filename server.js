@@ -9,6 +9,7 @@ var winston = require('winston'),
     mqtt = require('mqtt'),
     async = require('async'),
     path = require('path'),
+    url = require('url'),
     joi = require('joi'),
     yaml = require('js-yaml'),
     jsonfile = require('jsonfile'),
@@ -103,6 +104,11 @@ function migrateState (version) {
     // Default port
     if (!config.port) {
         config.port = 8080;
+    }
+
+    // Default protocol
+    if (!url.parse(config.mqtt.host).protocol) {
+        config.mqtt.host = 'mqtt://' + config.mqtt.host;
     }
 
     // Stuff was previously in subscription.json, load that and migrate it
@@ -262,9 +268,9 @@ async.series([
         process.nextTick(next);
     },
     function connectToMQTT (next) {
-        winston.info('Connecting to MQTT at mqtt://%s', config.mqtt.host);
+        winston.info('Connecting to MQTT at %s', config.mqtt.host);
 
-        client = mqtt.connect('mqtt://' + config.mqtt.host);
+        client = mqtt.connect(config.mqtt.host, config.mqtt);
         client.on('message', parseMQTTMessage);
         client.on('connect', function () {
             if (subscriptions.length > 0) {
