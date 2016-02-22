@@ -39,48 +39,103 @@ $ mqtt pub -t 'smartthings/Fireplace Lights/switch'  -m 'off'
 
 # Configuration
 
-The bridge has one yaml file for configuration.  Currently we only have three items you can set:
+The bridge has one yaml file for configuration:
 
 ```
 ---
 mqtt:
-    # Specify your MQTT Broker's hostname or IP address here
-    host: mqtt
+    # Specify your MQTT Broker URL here
+    host: mqtt://localhost
+    # Example from CloudMQTT
+    # host: mqtt:///m10.cloudmqtt.com:19427
+
     # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
     preface: smartthings
+
+    # Other optional settings from https://www.npmjs.com/package/mqtt#mqttclientstreambuilder-options
+    # username: AzureDiamond
+    # password: hunter2
 
 # Port number to listen on
 port: 8080
 
 ```
 
-We'll be adding additional fields as this service progresses (mqtt port, username, password, etc).
+# Installation
 
-# Usage
+There are two ways to use this, Docker (self-contained) or NPM (can run on Raspberry Pi).
 
-1. Run the Docker container
+## Docker
 
+Docker will automatically download the image, but you can "install" it or "update" it via `docker pull`:
+```
+$ docker pull stjohnjohnson/smartthings-mqtt-bridge
+```
+
+To run it (using `/opt/mqtt-bridge` as your config directory and `8080` as the port):
+```
+$ docker run \
+    -d \
+    --name="mqtt-bridge" \
+    -v /opt/mqtt-bridge:/config \
+    -p 8080:8080 \
+    stjohnjohnson/smartthings-mqtt-bridge
+```
+
+To restart it:
+```
+$ docker restart mqtt-bridge
+```
+
+## NPM
+
+To install the module, just use `npm`:
+```
+$ npm install -g smartthings-mqtt-bridge
+```
+
+If you want to run it, you can simply call the binary:
+```
+$ smartthings-mqtt-bridge
+Starting SmartThings MQTT Bridge - v1.1.3
+Loading configuration
+No previous configuration found, creating one
+```
+
+Although we recommend using a process manager like [PM2][pm2]:
+```
+$ pm2 start smartthings-mqtt-bridge
+[PM2] Starting smartthings-mqtt-bridge in fork_mode (1 instance)
+[PM2] Done.
+┌─────────────────────────┬────┬──────┬───────┬────────┬─────────┬────────┬────────────┬──────────┐
+│ App name                │ id │ mode │ pid   │ status │ restart │ uptime │ memory     │ watching │
+├─────────────────────────┼────┼──────┼───────┼────────┼─────────┼────────┼────────────┼──────────┤
+│ smartthings-mqtt-bridge │ 1  │ fork │ 20715 │ online │ 0       │ 0s     │ 7.523 MB   │ disabled │
+└─────────────────────────┴────┴──────┴───────┴────────┴─────────┴────────┴────────────┴──────────┘
+
+$ pm2 logs smartthings-mqtt-bridge
+smartthings-mqtt-bridge-1 (out): info: Starting SmartThings MQTT Bridge - v1.1.3
+smartthings-mqtt-bridge-1 (out): info: Loading configuration
+smartthings-mqtt-bridge-1 (out): info: No previous configuration found, creating one
+
+$ pm2 restart smartthings-mqtt-bridge
+```
+
+## Usage
+1. Customize the MQTT host
     ```
-    $ docker run \
-        -d \
-        --name="mqtt-bridge" \
-        -v /opt/mqtt-bridge:/config \
-        -p 8080:8080 \
-        stjohnjohnson/smartthings-mqtt-bridge
+    $ vi config.yml
+    # Restart the service to get the latest changes
     ```
-2. Customize the MQTT host
+ 
+2. Install the [Device Type][dt] on the [Device Handler IDE][ide-dt]
+3. Configure the Device Type (via the IDE) with the IP Address, Port, and MAC Address of the machine running the Docker container
+4. Install the [Smart App][app] on the [Smart App IDE][ide-app]
+5. Configure the Smart App (via the Native App) with the devices you want to share and the Device Handler you just installed as the bridge
+6. Watch as MQTT is populated with events from your devices
 
-    ```
-    $ vi /opt/mqtt-bridge/config.yml
-    $ docker restart mqtt-bridge
-    ```
-3. Install the [Device Type][dt] on the [Device Handler IDE][ide-dt]
-4. Configure the Device Type (via the IDE) with the IP Address, Port, and MAC Address of the machine running the Docker container
-5. Install the [Smart App][app] on the [Smart App IDE][ide-app]
-6. Configure the Smart App (via the Native App) with the devices you want to share and the Device Handler you just installed as the bridge
-7. Watch as MQTT is populated with events from your devices
-
-## Docker Compose
+## Advanced
+### Docker Compose
 
 If you want to bundle everything together, you can use [Docker Compose][docker-compose].
 
@@ -119,3 +174,4 @@ This creates a directory called `./mqtt-bridge/` to store configuration for the 
  [ide-app]: https://graph.api.smartthings.com/ide/apps
  [ha-issue]: https://github.com/balloob/home-assistant/issues/604
  [docker-compose]: https://docs.docker.com/compose/
+ [pm2]: http://pm2.keymetrics.io/
