@@ -36,6 +36,7 @@ preferences {
     }
 
     section ("Input") {
+        input "accelerationSensors", "capability.accelerationSensor", title: "Acceleration Sensors", multiple: true, required: false
         input "switches", "capability.switch", title: "Switches", multiple: true, required: false
         input "levels", "capability.switchLevel", title: "Levels", multiple: true, required: false
         input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true, required: false
@@ -45,6 +46,7 @@ preferences {
         input "humiditySensors", "capability.relativeHumidityMeasurement", title: "Humidity Sensors", multiple: true, required: false
         input "waterSensors", "capability.waterSensor", title: "Water Sensors", multiple: true, required: false
         input "windowShades", "capability.windowShade", title: "Window Shades/Blinds", multiple: true, required: false
+        input "presenceSensors", "capability.presenceSensor", title: "Presence Sensors", multiple: true, required: false
         input "garageDoors", "capability.garageDoorControl", title: "Garage Doors", multiple: true, required: false
     }
 
@@ -80,15 +82,17 @@ def getDeviceNames(devices) {
 
 def initialize() {
     // Subscribe to new events from devices
+    subscribe(accelerationSensors, "acceleration", inputHandler)
     subscribe(powerMeters, "power", inputHandler)
     subscribe(motionSensors, "motion", inputHandler)
     subscribe(switches, "switch", inputHandler)
     subscribe(levels, "level", inputHandler)
     subscribe(contactSensors, "contact", inputHandler)
-    subscribe(temperatureSensors, "temperature", inputHandler)  
-    subscribe(humiditySensors, "humidity", inputHandler)    
-    subscribe(waterSensors, "water", inputHandler)  
-    subscribe(windowShades, "windowShade", inputHandler)    
+    subscribe(temperatureSensors, "temperature", inputHandler)
+    subscribe(humiditySensors, "humidity", inputHandler)
+    subscribe(waterSensors, "water", inputHandler)
+    subscribe(windowShades, "windowShade", inputHandler)
+    subscribe(presenceSensor, "presence", inputHandler)
     subscribe(garageDoors, "door", inputHandler)
 
     // Subscribe to events from the bridge
@@ -104,6 +108,7 @@ def updateSubscription() {
         path: '/subscribe',
         body: [
             devices: [
+                acceleration: getDeviceNames(accelerationSensors),
                 power: getDeviceNames(powerMeters),
                 motion: getDeviceNames(motionSensors),
                 switch: getDeviceNames(switches),
@@ -113,8 +118,8 @@ def updateSubscription() {
                 humidity: getDeviceNames(humiditySensors),
                 water: getDeviceNames(waterSensors),
                 windowShade: getDeviceNames(windowShades),
-                door: getDeviceNames(garageDoors)
-
+                presence: getDeviceNames(presenceSensors),
+                door: getDeviceNames(garageDoors),
                 notify: ["Contacts", "System"]
             ]
         ]
@@ -130,12 +135,14 @@ def bridgeHandler(evt) {
     def json = new JsonSlurper().parseText(evt.value)
 
     switch (json.type) {
+        case "acceleration":
         case "power":
         case "contact":
         case "temperature":
         case "humidity":
         case "water":
         case "motion":
+        case "presence":
             // Do nothing, we can change nothing here
             break
         case "notify":
@@ -206,4 +213,3 @@ def inputHandler(evt) {
     log.debug "Forwarding device event to bridge: ${json}"
     bridge.deviceNotification(json)
 }
-
