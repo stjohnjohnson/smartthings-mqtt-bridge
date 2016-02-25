@@ -31,6 +31,10 @@ definition(
 )
 
 preferences {
+    section("Send Notifications?") {
+        input("recipients", "contact", title: "Send notifications to", multiple: true, required: false)
+    }
+
     section ("Input") {
         input "switches", "capability.switch", title: "Switches", multiple: true, required: false
         input "levels", "capability.switchLevel", title: "Levels", multiple: true, required: false
@@ -111,6 +115,7 @@ def updateSubscription() {
                 windowShade: getDeviceNames(windowShades),
                 door: getDeviceNames(garageDoors)
 
+                notify: ["Contacts", "System"]
             ]
         ]
     ])
@@ -133,6 +138,13 @@ def bridgeHandler(evt) {
         case "motion":
             // Do nothing, we can change nothing here
             break
+        case "notify":
+          if (json.name == "Contacts") {
+              sendNotificationToContacts("${json.value}", recipients)
+          } else {
+              sendNotificationEvent("${json.value}")
+          }
+          break
         case "switch":
             switches.each{device->
                 if (device.displayName == json.name) {
@@ -173,6 +185,8 @@ def bridgeHandler(evt) {
                 }
             }
             break
+      default:
+        break
     }
 
     log.debug "Receiving device event from bridge: ${json}"
@@ -192,3 +206,4 @@ def inputHandler(evt) {
     log.debug "Forwarding device event to bridge: ${json}"
     bridge.deviceNotification(json)
 }
+
