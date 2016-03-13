@@ -18,6 +18,396 @@
  */
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
+import groovy.transform.Field
+
+// Massive lookup tree
+@Field CAPABILITY_MAP = [
+    "accelerationSensors": [
+        name: "Acceleration Sensor",
+        capability: "capability.accelerationSensor",
+        attributes: [
+            "acceleration"
+        ]
+    ],
+    "alarm": [
+        name: "Alarm",
+        capability: "capability.alarm",
+        attributes: [
+            "alarm"
+        ],
+        action: "actionAlarm"
+    ],
+    "battery": [
+        name: "Battery",
+        capability: "capability.battery",
+        attributes: [
+            "battery"
+        ]
+    ],
+    "beacon": [
+        name: "Beacon",
+        capability: "capability.beacon",
+        attributes: [
+            "presence"
+        ]
+    ],
+    "button": [
+        name: "Button",
+        capability: "capability.button",
+        attributes: [
+            "button"
+        ]
+    ],
+    "carbonDioxideMeasurement": [
+        name: "Carbon Dioxide Measurement",
+        capability: "capability.carbonDioxideMeasurement",
+        attributes: [
+            "carbonDioxide"
+        ]
+    ],
+    "carbonMonoxideDetector": [
+        name: "Carbon Monoxide Detector",
+        capability: "capability.carbonMonoxideDetector",
+        attributes: [
+            "carbonMonoxide"
+        ]
+    ],
+    "colorControl": [
+        name: "Color Control",
+        capability: "capability.colorControl",
+        attributes: [
+            "hue",
+            "saturation",
+            "color"
+        ],
+        action: "actionColor"
+    ],
+    "colorTemperature": [
+        name: "Color Temperature",
+        capability: "capability.colorTemperature",
+        attributes: [
+            "colorTemperature"
+        ],
+        action: "actionColorTemperature"
+    ],
+    "consumable": [
+        name: "Consumable",
+        capability: "capability.consumable",
+        attributes: [
+            "consumable"
+        ],
+        action: "actionConsumable"
+    ],
+    "contactSensors": [
+        name: "Contact Sensor",
+        capability: "capability.contactSensor",
+        attributes: [
+            "contact"
+        ]
+    ],
+    "doorControl": [
+        name: "Door Control",
+        capability: "capability.doorControl",
+        attributes: [
+            "door"
+        ],
+        action: "actionOpenClosed"
+    ],
+    "energyMeter": [
+        name: "Energy Meter",
+        capability: "capability.energyMeter",
+        attributes: [
+            "energy"
+        ]
+    ],
+    "garageDoors": [
+        name: "Garage Door Control",
+        capability: "capability.garageDoorControl",
+        attributes: [
+            "door"
+        ],
+        action: "actionOpenClosed"
+    ],
+    "illuminanceMeasurement": [
+        name: "Illuminance Measurement",
+        capability: "capability.illuminanceMeasurement",
+        attributes: [
+            "illuminance"
+        ]
+    ],
+    "imageCapture": [
+        name: "Image Capture",
+        capability: "capability.imageCapture",
+        attributes: [
+            "image"
+        ]
+    ],
+    "levels": [
+        name: "Switch Level",
+        capability: "capability.switchLevel",
+        attributes: [
+            "level"
+        ],
+        action: "actionLevel"
+    ],
+    "lock": [
+        name: "Lock",
+        capability: "capability.lock",
+        attributes: [
+            "lock"
+        ],
+        action: "actionLock"
+    ],
+    "mediaController": [
+        name: "Media Controller",
+        capability: "capability.mediaController",
+        attributes: [
+            "activities",
+            "currentActivity"
+        ]
+    ],
+    "motionSensors": [
+        name: "Motion Sensor",
+        capability: "capability.motionSensor",
+        attributes: [
+            "motion"
+        ]
+    ],
+    "musicPlayer": [
+        name: "Music Player",
+        capability: "capability.musicPlayer",
+        attributes: [
+            "status",
+            "level",
+            "trackDescription",
+            "trackData",
+            "mute"
+        ],
+        action: "actionMusicPlayer"
+    ],
+    "pHMeasurement": [
+        name: "pH Measurement",
+        capability: "capability.pHMeasurement",
+        attributes: [
+            "pH"
+        ]
+    ],
+    "powerMeters": [
+        name: "Power Meter",
+        capability: "capability.powerMeter",
+        attributes: [
+            "power"
+        ]
+    ],
+    "presenceSensors": [
+        name: "Presence Sensor",
+        capability: "capability.presenceSensor",
+        attributes: [
+            "presence"
+        ]
+    ],
+    "humiditySensors": [
+        name: "Relative Humidity Measurement",
+        capability: "capability.relativeHumidityMeasurement",
+        attributes: [
+            "humidity"
+        ]
+    ],
+    "relaySwitch": [
+        name: "Relay Switch",
+        capability: "capability.relaySwitch",
+        attributes: [
+            "switch"
+        ],
+        action: "actionOnOff"
+    ],
+    "shockSensor": [
+        name: "Shock Sensor",
+        capability: "capability.shockSensor",
+        attributes: [
+            "shock"
+        ]
+    ],
+    "signalStrength": [
+        name: "Signal Strength",
+        capability: "capability.signalStrength",
+        attributes: [
+            "lqi",
+            "rssi"
+        ]
+    ],
+    "sleepSensor": [
+        name: "Sleep Sensor",
+        capability: "capability.sleepSensor",
+        attributes: [
+            "sleeping"
+        ]
+    ],
+    "smokeDetector": [
+        name: "Smoke Detector",
+        capability: "capability.smokeDetector",
+        attributes: [
+            "smoke"
+        ]
+    ],
+    "soundSensor": [
+        name: "Sound Sensor",
+        capability: "capability.soundSensor",
+        attributes: [
+            "sound"
+        ]
+    ],
+    "stepSensor": [
+        name: "Step Sensor",
+        capability: "capability.stepSensor",
+        attributes: [
+            "steps",
+            "goal"
+        ]
+    ],
+    "switches": [
+        name: "Switch",
+        capability: "capability.switch",
+        attributes: [
+            "switch"
+        ],
+        action: "actionOnOff"
+    ],
+    "soundPressureLevel": [
+        name: "Sound Pressure Level",
+        capability: "capability.soundPressureLevel",
+        attributes: [
+            "soundPressureLevel"
+        ]
+    ],
+    "tamperAlert": [
+        name: "Tamper Alert",
+        capability: "capability.tamperAlert",
+        attributes: [
+            "tamper"
+        ]
+    ],
+    "temperatureSensors": [
+        name: "Temperature Measurement",
+        capability: "capability.temperatureMeasurement",
+        attributes: [
+            "temperature"
+        ]
+    ],
+    "thermostat": [
+        name: "Thermostat",
+        capability: "capability.thermostat",
+        attributes: [
+            "temperature",
+            "heatingSetpoint",
+            "coolingSetpoint",
+            "thermostatSetpoint",
+            "thermostatMode",
+            "thermostatFanMode",
+            "thermostatOperatingState"
+        ],
+        action: "actionThermostat"
+    ],
+    "thermostatCoolingSetpoint": [
+        name: "Thermostat Cooling Setpoint",
+        capability: "capability.thermostatCoolingSetpoint",
+        attributes: [
+            "coolingSetpoint"
+        ],
+        action: "actionCoolingThermostat"
+    ],
+    "thermostatFanMode": [
+        name: "Thermostat Fan Mode",
+        capability: "capability.thermostatFanMode",
+        attributes: [
+            "thermostatFanMode"
+        ],
+        action: "actionThermostatFan"
+    ],
+    "thermostatHeatingSetpoint": [
+        name: "Thermostat Heating Setpoint",
+        capability: "capability.thermostatHeatingSetpoint",
+        attributes: [
+            "heatingSetpoint"
+        ],
+        action: "actionHeatingThermostat"
+    ],
+    "thermostatMode": [
+        name: "Thermostat Mode",
+        capability: "capability.thermostatMode",
+        attributes: [
+            "thermostatMode"
+        ],
+        action: "actionThermostatMode"
+    ],
+    "thermostatOperatingState": [
+        name: "Thermostat Operating State",
+        capability: "capability.thermostatOperatingState",
+        attributes: [
+            "thermostatOperatingState"
+        ]
+    ],
+    "thermostatSetpoint": [
+        name: "Thermostat Setpoint",
+        capability: "capability.thermostatSetpoint",
+        attributes: [
+            "thermostatSetpoint"
+        ]
+    ],
+    "threeAxis": [
+        name: "Three Axis",
+        capability: "capability.threeAxis",
+        attributes: [
+            "threeAxis"
+        ]
+    ],
+    "timedSession": [
+        name: "Timed Session",
+        capability: "capability.timedSession",
+        attributes: [
+            "timeRemaining",
+            "sessionStatus"
+        ],
+        action: "actionTimedSession"
+    ],
+    "touchSensor": [
+        name: "Touch Sensor",
+        capability: "capability.touchSensor",
+        attributes: [
+            "touch"
+        ]
+    ],
+    "valve": [
+        name: "Valve",
+        capability: "capability.valve",
+        attributes: [
+            "contact"
+        ],
+        action: "actionOpenClosed"
+    ],
+    "voltageMeasurement": [
+        name: "Voltage Measurement",
+        capability: "capability.voltageMeasurement",
+        attributes: [
+            "voltage"
+        ]
+    ],
+    "waterSensors": [
+        name: "Water Sensor",
+        capability: "capability.waterSensor",
+        attributes: [
+            "water"
+        ]
+    ],
+    "windowShades": [
+        name: "Window Shade",
+        capability: "capability.windowShade",
+        attributes: [
+            "windowShade"
+        ],
+        action: "actionOpenClosed"
+    ]
+]
 
 definition(
     name: "MQTT Bridge",
@@ -36,18 +426,9 @@ preferences {
     }
 
     section ("Input") {
-        input "accelerationSensors", "capability.accelerationSensor", title: "Acceleration Sensors", multiple: true, required: false
-        input "switches", "capability.switch", title: "Switches", multiple: true, required: false
-        input "levels", "capability.switchLevel", title: "Levels", multiple: true, required: false
-        input "powerMeters", "capability.powerMeter", title: "Power Meters", multiple: true, required: false
-        input "motionSensors", "capability.motionSensor", title: "Motion Sensors", multiple: true, required: false
-        input "contactSensors", "capability.contactSensor", title: "Contact Sensors", multiple: true, required: false
-        input "temperatureSensors", "capability.temperatureMeasurement", title: "Temperature Sensors", multiple: true, required: false
-        input "humiditySensors", "capability.relativeHumidityMeasurement", title: "Humidity Sensors", multiple: true, required: false
-        input "waterSensors", "capability.waterSensor", title: "Water Sensors", multiple: true, required: false
-        input "windowShades", "capability.windowShade", title: "Window Shades/Blinds", multiple: true, required: false
-        input "presenceSensors", "capability.presenceSensor", title: "Presence Sensors", multiple: true, required: false
-        input "garageDoors", "capability.garageDoorControl", title: "Garage Doors", multiple: true, required: false
+        CAPABILITY_MAP.each { key, capability ->
+            input key, capability["capability"], title: capability["name"], multiple: true, required: false
+        }
     }
 
     section ("Bridge") {
@@ -82,18 +463,11 @@ def getDeviceNames(devices) {
 
 def initialize() {
     // Subscribe to new events from devices
-    subscribe(accelerationSensors, "acceleration", inputHandler)
-    subscribe(powerMeters, "power", inputHandler)
-    subscribe(motionSensors, "motion", inputHandler)
-    subscribe(switches, "switch", inputHandler)
-    subscribe(levels, "level", inputHandler)
-    subscribe(contactSensors, "contact", inputHandler)
-    subscribe(temperatureSensors, "temperature", inputHandler)
-    subscribe(humiditySensors, "humidity", inputHandler)
-    subscribe(waterSensors, "water", inputHandler)
-    subscribe(windowShades, "windowShade", inputHandler)
-    subscribe(presenceSensor, "presence", inputHandler)
-    subscribe(garageDoors, "door", inputHandler)
+    CAPABILITY_MAP.each { key, capability ->
+        capability["attributes"].each { attribute ->
+            subscribe(settings[key], attribute, inputHandler)
+        }
+    }
 
     // Subscribe to events from the bridge
     subscribe(bridge, "message", bridgeHandler)
@@ -102,26 +476,25 @@ def initialize() {
     updateSubscription()
 }
 
-// Update the bridge's subscription
+// Update the bridge"s subscription
 def updateSubscription() {
+    def attributes = [
+        notify: ["Contacts", "System"]
+    ]
+    CAPABILITY_MAP.each { key, capability ->
+        capability["attributes"].each { attribute ->
+            if (!attributes.containsKey(attribute)) {
+                attributes[attribute] = []
+            }
+            settings[key].each {device ->
+                attributes[attribute].push(device.displayName)
+            }
+        }
+    }
     def json = new groovy.json.JsonOutput().toJson([
-        path: '/subscribe',
+        path: "/subscribe",
         body: [
-            devices: [
-                acceleration: getDeviceNames(accelerationSensors),
-                power: getDeviceNames(powerMeters),
-                motion: getDeviceNames(motionSensors),
-                switch: getDeviceNames(switches),
-                level: getDeviceNames(levels),
-                contact: getDeviceNames(contactSensors),
-                temperature: getDeviceNames(temperatureSensors),
-                humidity: getDeviceNames(humiditySensors),
-                water: getDeviceNames(waterSensors),
-                windowShade: getDeviceNames(windowShades),
-                presence: getDeviceNames(presenceSensors),
-                door: getDeviceNames(garageDoors),
-                notify: ["Contacts", "System"]
-            ]
+            devices: attributes
         ]
     ])
 
@@ -133,76 +506,38 @@ def updateSubscription() {
 // Receive an event from the bridge
 def bridgeHandler(evt) {
     def json = new JsonSlurper().parseText(evt.value)
+    log.debug "Received device event from bridge: ${json}"
 
-    switch (json.type) {
-        case "acceleration":
-        case "power":
-        case "contact":
-        case "temperature":
-        case "humidity":
-        case "water":
-        case "motion":
-        case "presence":
-            // Do nothing, we can change nothing here
-            break
-        case "notify":
-          if (json.name == "Contacts") {
-              sendNotificationToContacts("${json.value}", recipients)
-          } else {
-              sendNotificationEvent("${json.value}")
-          }
-          break
-        case "switch":
-            switches.each{device->
-                if (device.displayName == json.name) {
-                    if (json.value == 'on') {
-                        device.on();
-                    } else {
-                        device.off();
-                    }
-                }
-            }
-            break
-        case "windowShade":
-            windowShades.each{device->
-                if (device.displayName == json.name) {
-                    if (json.value == 'open') {
-                        device.open()
-                    } else {
-                        device.close()
-                    }
-                }
-            }
-            break
-        case "door":
-            garageDoors.each{device->
-                if (device.displayName == json.name) {
-                    if (json.value == 'open') {
-                        device.open()
-                    } else {
-                        device.close()
-                    }
-                }
-            }
-            break
-        case "level":
-            levels.each{device->
-                if (device.displayName == json.name) {
-                    device.setLevel(json.value);
-                }
-            }
-            break
-      default:
-        break
+    if (json.type == "notify") {
+        if (json.name == "Contacts") {
+            sendNotificationToContacts("${json.value}", recipients)
+        } else {
+            sendNotificationEvent("${json.value}")
+        }
+        return
     }
 
-    log.debug "Receiving device event from bridge: ${json}"
+    // @NOTE this is stored AWFUL, we need a faster lookup table
+    // @NOTE this also has no fast fail, I need to look into how to do that
+    CAPABILITY_MAP.each { key, capability ->
+        if (capability["attributes"].contains(json.type)) {
+            settings[key].each {device ->
+                if (device.displayName == json.name) {
+                    if (capability.containsKey("action")) {
+                        def action = capability["action"]
+                        // Yes, this is calling the method dynamically
+                        "$action"(device, json.type, json.value)
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Receive an event from a device
 def inputHandler(evt) {
     def json = new JsonOutput().toJson([
-        path: '/push',
+        path: "/push",
         body: [
             name: evt.displayName,
             value: evt.value,
@@ -212,4 +547,132 @@ def inputHandler(evt) {
 
     log.debug "Forwarding device event to bridge: ${json}"
     bridge.deviceNotification(json)
+}
+
+// +---------------------------------+
+// | WARNING, BEYOND HERE BE DRAGONS |
+// +---------------------------------+
+// These are the functions that handle incoming messages from MQTT.
+// I tried to put them in closures but apparently SmartThings Groovy sandbox
+// restricts you from running clsures from an object (it's not safe).
+
+def actionAlarm(device, attribute, value) {
+    switch (value) {
+        case "strobe":
+            device.strobe()
+        break
+        case "siren":
+            device.siren()
+        break
+        case "off":
+            device.off()
+        break
+        case "both":
+            device.both()
+        break
+    }
+}
+
+def actionColor(device, attribute, value) {
+    switch (attribute) {
+        case "hue":
+            device.setHue(value)
+        break
+        case "saturation":
+            device.setSaturation(value)
+        break
+        case "color":
+            device.setColor(value)
+        break
+    }
+}
+
+def actionOpenClosed(device, attribute, value) {
+    if (value == "open") {
+        device.open()
+    } else if (value == "closed") {
+        device.close()
+    }
+}
+
+def actionOnOff(device, attribute, value) {
+    if (value == "off") {
+        device.off()
+    } else if (value == "on") {
+        device.on()
+    }
+}
+
+def actionThermostat(device, attribute, value) {
+    switch(attribute) {
+        case "heatingSetpoint":
+            device.setHeatingSetpoint(value)
+        break
+        case "coolingSetpoint":
+            device.setCoolingSetpoint(value)
+        break
+        case "thermostatMode":
+            device.setThermostatMode(value)
+        break
+        case "thermostatFanMode":
+            device.setThermostatFanMode(value)
+        break
+    }
+}
+
+def actionMusicPlayer(device, attribute, value) {
+    switch(attribute) {
+        case "level":
+            device.setLevel(value)
+        break
+        case "mute":
+            if (value == "muted") {
+                device.mute()
+            } else if (value == "unmuted") {
+                device.unmute()
+            }
+        break
+    }
+}
+
+def actionColorTemperature(device, attribute, value) {
+    device.setColorTemperature(value)
+}
+
+def actionLevel(device, attribute, value) {
+    device.setLevel(value)
+}
+
+def actionConsumable(device, attribute, value) {
+    device.setConsumableStatus(value)
+}
+
+def actionLock(device, attribute, value) {
+    if (value == "locked") {
+        device.lock()
+    } else if (value == "unlocked") {
+        device.unlock()
+    }
+}
+
+def actionCoolingThermostat(device, attribute, value) {
+    device.setCoolingSetpoint(value)
+}
+
+def actionThermostatFan(device, attribute, value) {
+    device.setThermostatFanMode(value)
+}
+
+def actionHeatingThermostat(device, attribute, value) {
+    device.setHeatingSetpoint(value)
+}
+
+def actionThermostatMode(device, attribute, value) {
+    device.setThermostatMode(value)
+}
+
+def actionTimedSession(device, attribute, value) {
+    if (attribute == "timeRemaining") {
+        device.setTimeRemaining(value)
+    }
 }
