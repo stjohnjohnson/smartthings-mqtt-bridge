@@ -6,6 +6,7 @@
 [![Docker Stars](https://img.shields.io/docker/stars/stjohnjohnson/smartthings-mqtt-bridge.svg)](https://hub.docker.com/r/stjohnjohnson/smartthings-mqtt-bridge/)
 [![Wercker Status](https://app.wercker.com/status/f2df197ea40f89b7eda771e67b4a4e1e/s/master "wercker status")](https://app.wercker.com/project/bykey/f2df197ea40f89b7eda771e67b4a4e1e)
 [![Gitter](https://badges.gitter.im/stjohnjohnson/smartthings-mqtt-bridge.svg)](https://gitter.im/stjohnjohnson/smartthings-mqtt-bridge?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Donate](https://img.shields.io/badge/donate-bitcoin-yellow.svg)](#donate)
 
 This project was spawned by the desire to [control SmartThings from within Home Assistant][ha-issue].  Since Home Assistant already supports MQTT, we chose to go and build a bridge between SmartThings and MQTT.
 
@@ -128,7 +129,7 @@ $ pm2 restart smartthings-mqtt-bridge
     $ vi config.yml
     # Restart the service to get the latest changes
     ```
- 
+
 2. Install the [Device Type][dt] on the [Device Handler IDE][ide-dt]
 3. Configure the Device Type (via the IDE) with the IP Address, Port, and MAC Address of the machine running the Docker container
 4. Install the [Smart App][app] on the [Smart App IDE][ide-app]
@@ -168,6 +169,12 @@ homeassistant:
 ```
 
 This creates a directory called `./mqtt-bridge/` to store configuration for the bridge.  It also creates a directory `./home-assistant` to store configuration for HA.
+
+## Donate
+
+If you use and love our bridge tool, please consider buying us a coffee by sending some Satoshi to `1sBPcBai7gZco6LipPthuyZ5rH4RKx1Bg`.
+
+[![Donate Bitcoin](http://i.imgur.com/VJomBaC.png)](https://coinbase.com/stjohn)
 
  [dt]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/devicetypes/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [app]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/smartapps/stj/mqtt-bridge.src/mqtt-bridge.groovy
