@@ -24,7 +24,11 @@ var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     EVENTS_LOG = path.join(CONFIG_DIR, 'events.log'),
     ACCESS_LOG = path.join(CONFIG_DIR, 'access.log'),
     ERROR_LOG = path.join(CONFIG_DIR, 'error.log'),
-    CURRENT_VERSION = require('./package').version;
+    CURRENT_VERSION = require('./package').version,
+    TOPIC_STATE = 'state',
+    TOPIC_COMMAND = 'command',
+    SUFFIX_STATE = 'state_suffix',
+    SUFFIX_COMMAND = 'command_suffix';
 
 var app = express(),
     client,
@@ -96,9 +100,22 @@ function saveState () {
  * @param  {String}     version Version the state was written in before
  */
 function migrateState (version) {
+    // Make sure the object exists
+    if (!config.mqtt) {
+        config.mqtt = {};
+    }
+
     // This is the previous default, but it's totally wrong
-    if (config.mqtt && !config.mqtt.preface) {
+    if (!config.mqtt.preface) {
         config.mqtt.preface = '/smartthings';
+    }
+
+    // Default Suffixes
+    if (!config.mqtt[SUFFIX_STATE]) {
+        config.mqtt[SUFFIX_STATE] = '';
+    }
+    if (!config.mqtt[SUFFIX_COMMAND]) {
+        config.mqtt[SUFFIX_COMMAND] = '';
     }
 
     // Default port
@@ -134,7 +151,7 @@ function migrateState (version) {
  * @param  {Result}  res            Result Object
  */
 function handlePushEvent (req, res) {
-    var topic = getTopicFor(req.body.name, req.body.type),
+    var topic = getTopicFor(req.body.name, req.body.type, TOPIC_STATE),
         value = req.body.value;
 
     winston.info('Incoming message from SmartThings: %s = %s', topic, value);
@@ -164,7 +181,7 @@ function handleSubscribeEvent (req, res) {
     subscriptions = [];
     Object.keys(req.body.devices).forEach(function (property) {
         req.body.devices[property].forEach(function (device) {
-            subscriptions.push(getTopicFor(device, property));
+            subscriptions.push(getTopicFor(device, property, TOPIC_COMMAND));
         });
     });
 
@@ -183,15 +200,30 @@ function handleSubscribeEvent (req, res) {
     });
 }
 
+
 /**
  * Get the topic name for a given item
  * @method getTopicFor
  * @param  {String}    device   Device Name
  * @param  {String}    property Property
+ * @param  {String}    type     Type of topic (command or state)
  * @return {String}             MQTT Topic name
  */
-function getTopicFor (device, property) {
-    return [config.mqtt.preface, device, property].join('/');
+function getTopicFor (device, property, type) {
+    var tree = [config.mqtt.preface, device, property],
+        suffix;
+
+    if (type === TOPIC_COMMAND) {
+        suffix = config.mqtt[SUFFIX_COMMAND];
+    } else if (type === TOPIC_STATE) {
+        suffix = config.mqtt[SUFFIX_STATE];
+    }
+
+    if (suffix) {
+        tree.push(suffix);
+    }
+
+    return tree.join('/');
 }
 
 /**
@@ -217,17 +249,18 @@ function parseMQTTMessage (topic, message) {
 
     // If sending level data and the switch is off, don't send anything
     // SmartThings will turn the device on (which is confusing)
-    if (property === 'level' && history[getTopicFor(device, 'switch')] === 'off') {
+    if (property === 'level' && history[getTopicFor(device, 'switch', TOPIC_STATE)] === 'off') {
         winston.info('Skipping level set due to device being off');
         return;
     }
 
     // If sending switch data and there is already a level value, send level instead
     // SmartThings will turn the device on
-    if (property === 'switch' && contents === 'on' && history[getTopicFor(device, 'level')] !== undefined) {
+    if (property === 'switch' && contents === 'on' &&
+        history[getTopicFor(device, 'level', TOPIC_COMMAND)] !== undefined) {
         winston.info('Passing level instead of switch on');
         property = 'level';
-        contents = history[getTopicFor(device, 'level')];
+        contents = history[getTopicFor(device, 'level', TOPIC_COMMAND)];
     }
 
     request.post({
