@@ -78,12 +78,18 @@ def parse(String description) {
 
 // Send message to the Bridge
 def deviceNotification(message) {
+    if (device.hub == null)
+    {
+        log.error "Hub is null, must set the hub in the device settings so we can get local hub IP and port"
+        return
+    }
+    
     log.debug "Sending '${message}' to device"
     setNetworkAddress()
 
     def slurper = new JsonSlurper()
     def parsed = slurper.parseText(message)
-
+    
     if (parsed.path == '/subscribe') {
         parsed.body.callback = device.hub.getDataValue("localIP") + ":" + device.hub.getDataValue("localSrvPortTCP")
     }

@@ -131,6 +131,8 @@ $ pm2 restart smartthings-mqtt-bridge
     ```
 
 2. Install the [Device Type][dt] on the [Device Handler IDE][ide-dt]
+** Important: make sure you set the Hub in the device settings! it's a non-optional field but we can't work without it. 
+
 3. Configure the Device Type (via the IDE) with the IP Address, Port, and MAC Address of the machine running the Docker container
 4. Install the [Smart App][app] on the [Smart App IDE][ide-app]
 5. Configure the Smart App (via the Native App) with the devices you want to share and the Device Handler you just installed as the bridge
