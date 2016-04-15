@@ -54,6 +54,11 @@ mqtt:
     # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
     preface: smartthings
 
+    # Suffix for the state topics $PREFACE/$DEVICE_NAME/$PROPERTY/$STATE_SUFFIX
+    # state_suffix: state
+    # Suffix for the command topics $PREFACE/$DEVICE_NAME/$PROPERTY/$COMMAND_SUFFIX
+    # command_suffix: cmd
+
     # Other optional settings from https://www.npmjs.com/package/mqtt#mqttclientstreambuilder-options
     # username: AzureDiamond
     # password: hunter2
