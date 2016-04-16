@@ -240,18 +240,19 @@ function parseMQTTMessage (topic, message) {
     var pieces = topic.substr(config.mqtt.preface.length + 1).split('/'),
         device = pieces[0],
         property = pieces[1],
-        topicState = getTopicFor(device, 'switch', TOPIC_STATE),
-        topicCommand = getTopicFor(device, 'switch', TOPIC_COMMAND);
+        topicState = getTopicFor(device, property, TOPIC_STATE),
+        topicSwitchState = getTopicFor(device, 'switch', TOPIC_STATE),
+        topicLevelCommand = getTopicFor(device, 'level', TOPIC_COMMAND);
 
-    if (history[topicCommand] === contents) {
-        winston.debug('Skipping duplicate message from: %s = %s', topic, contents);
+    if (history[topicState] === contents) {
+        winston.info('Skipping duplicate message from: %s = %s', topic, contents);
         return;
     }
     history[topic] = contents;
 
     // If sending level data and the switch is off, don't send anything
     // SmartThings will turn the device on (which is confusing)
-    if (property === 'level' && history[topicState] === 'off') {
+    if (property === 'level' && history[topicSwitchState] === 'off') {
         winston.info('Skipping level set due to device being off');
         return;
     }
@@ -259,10 +260,10 @@ function parseMQTTMessage (topic, message) {
     // If sending switch data and there is already a level value, send level instead
     // SmartThings will turn the device on
     if (property === 'switch' && contents === 'on' &&
-        history[getTopicFor(device, 'level', TOPIC_COMMAND)] !== undefined) {
+        history[topicLevelCommand] !== undefined) {
         winston.info('Passing level instead of switch on');
         property = 'level';
-        contents = history[getTopicFor(device, 'level', TOPIC_COMMAND)];
+        contents = history[topicLevelCommand];
     }
 
     request.post({
