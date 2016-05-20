@@ -171,7 +171,8 @@ import groovy.transform.Field
         capability: "capability.motionSensor",
         attributes: [
             "motion"
-        ]
+        ],
+        action: "actionActiveInactive"
     ],
     "musicPlayer": [
         name: "Music Player",
@@ -600,6 +601,14 @@ def actionOnOff(device, attribute, value) {
         device.off()
     } else if (value == "on") {
         device.on()
+    }
+}
+
+def actionActiveInactive(device, attribute, value) {
+    if (value == "active") {
+            device.active()
+    } else if (value == "inactive") {
+            device.inactive()
     }
 }
 
