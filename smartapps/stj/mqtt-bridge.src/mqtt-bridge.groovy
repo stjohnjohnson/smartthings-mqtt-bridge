@@ -606,9 +606,9 @@ def actionOnOff(device, attribute, value) {
 
 def actionActiveInactive(device, attribute, value) {
     if (value == "active") {
-            device.active()
+        device.active()
     } else if (value == "inactive") {
-            device.inactive()
+        device.inactive()
     }
 }
 
