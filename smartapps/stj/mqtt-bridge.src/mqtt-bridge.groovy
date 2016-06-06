@@ -640,7 +640,7 @@ def actionColorTemperature(device, attribute, value) {
 }
 
 def actionLevel(device, attribute, value) {
-    device.setLevel(value)
+    device.setLevel(value as int)
 }
 
 def actionConsumable(device, attribute, value) {
