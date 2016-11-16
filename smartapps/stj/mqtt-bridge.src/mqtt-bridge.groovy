@@ -577,13 +577,15 @@ def actionAlarm(device, attribute, value) {
 def actionColor(device, attribute, value) {
     switch (attribute) {
         case "hue":
-            device.setHue(value)
+            device.setHue(value as float)
         break
         case "saturation":
-            device.setSaturation(value)
+            device.setSaturation(value as float)
         break
         case "color":
-            device.setColor(value)
+            def values = value.split(',')
+            def colormap = ["hue": values[0] as float, "saturation": values[1] as float]
+            device.setColor(colormap)
         break
     }
 }
@@ -645,7 +647,7 @@ def actionMusicPlayer(device, attribute, value) {
 }
 
 def actionColorTemperature(device, attribute, value) {
-    device.setColorTemperature(value)
+    device.setColorTemperature(value as int)
 }
 
 def actionLevel(device, attribute, value) {
