@@ -135,13 +135,12 @@ $ pm2 restart smartthings-mqtt-bridge
     # Restart the service to get the latest changes
     ```
 
-2. Install the [Device Type][dt] on the [Device Handler IDE][ide-dt]
-** Important: make sure you set the Hub in the device settings! it's a non-optional field but we can't work without it. 
-
-3. Configure the Device Type (via the IDE) with the IP Address, Port, and MAC Address of the machine running the Docker container
-4. Install the [Smart App][app] on the [Smart App IDE][ide-app]
+2. Install the [Device Handler][dt] in the [Device Handler IDE][ide-dt] using "Create via code"
+3. Add the "MQTT Device" device in the [My Devices IDE][ide-mydev]. Enter MQTT Device (or whatever) for the name. Select "MQTT Bridge" for the type. The other values are up to you.
+4. Configure the "MQTT Device" in the [My Devices IDE][ide-mydev] with the IP Address, Port, and MAC Address of the machine running the Docker container
+4. Install the [Smart App][app] on the [Smart App IDE][ide-app] using "Create via code"
 5. Configure the Smart App (via the Native App) with the devices you want to share and the Device Handler you just installed as the bridge
-6. Watch as MQTT is populated with events from your devices
+6. Via the Native App, select your MQTT device and watch as MQTT is populated with events from your devices
 
 ## Advanced
 ### Docker Compose
@@ -186,6 +185,7 @@ If you use and love our bridge tool, please consider buying us a coffee by sendi
  [dt]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/devicetypes/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [app]: https://github.com/stjohnjohnson/smartthings-mqtt-bridge/blob/master/smartapps/stj/mqtt-bridge.src/mqtt-bridge.groovy
  [ide-dt]: https://graph.api.smartthings.com/ide/devices
+ [ide-mydev]: https://graph.api.smartthings.com/device/list
  [ide-app]: https://graph.api.smartthings.com/ide/apps
  [ha-issue]: https://github.com/balloob/home-assistant/issues/604
  [docker-compose]: https://docs.docker.com/compose/
