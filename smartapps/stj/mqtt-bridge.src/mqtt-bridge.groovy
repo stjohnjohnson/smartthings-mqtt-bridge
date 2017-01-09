@@ -489,6 +489,9 @@ def updateSubscription() {
             }
             settings[key].each {device ->
                 attributes[attribute].push(device.displayName)
+                
+                def currval = device.currentValue("${attribute}")
+            	pushCurrentValue(device.displayName, "${currval}", attribute)
             }
         }
     }
@@ -502,6 +505,20 @@ def updateSubscription() {
     log.debug "Updating subscription: ${json}"
 
     bridge.deviceNotification(json)
+}
+
+def pushCurrentValue(displayName, currValue, attribute) {   
+    def json = new JsonOutput().toJson([
+        path: "/push",
+        body: [
+            name: displayName,
+            value: currValue,
+            type: attribute
+        ]
+    ])
+    log.debug "Forwarding device event to bridge: ${json}"
+    bridge.deviceNotification(json)
+    ///////////////////
 }
 
 // Receive an event from the bridge
