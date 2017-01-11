@@ -490,7 +490,8 @@ def updateSubscription() {
             settings[key].each {device ->
                 attributes[attribute].push(device.displayName)
                 
-                def currval = device.currentValue("${attribute}")
+                //def currval = device.currentValue("${attribute}")
+                def currval = device.currentState("${attribute}").value
             	pushCurrentValue(device.displayName, "${currval}", attribute)
             }
         }
