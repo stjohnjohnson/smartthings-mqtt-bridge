@@ -475,6 +475,8 @@ def initialize() {
 
     // Update the bridge
     updateSubscription()
+    // Auto-update every 30 minutes
+    schedule("0 0/30 * * * ?", updateSubscription)
 }
 
 // Update the bridge"s subscription
@@ -489,6 +491,12 @@ def updateSubscription() {
             }
             settings[key].each {device ->
                 attributes[attribute].push(device.displayName)
+                // Send current value
+            	inputHandler([
+                    displayName: device.displayName,
+                    value: device.currentState(attribute).value,
+                    name: attribute
+                ])
             }
         }
     }
@@ -500,7 +508,6 @@ def updateSubscription() {
     ])
 
     log.debug "Updating subscription: ${json}"
-
     bridge.deviceNotification(json)
 }
 
