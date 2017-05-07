@@ -643,6 +643,11 @@ def actionMusicPlayer(device, attribute, value) {
                 device.unmute()
             }
         break
+        case "status":
+            if (device.getSupportedCommands().any {it.name == "setStatus"}) {
+                device.setStatus(value)
+            }
+        break
     }
 }
 
