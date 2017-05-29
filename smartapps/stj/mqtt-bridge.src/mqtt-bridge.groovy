@@ -524,13 +524,13 @@ def bridgeHandler(evt) {
         if (capability["attributes"].contains(json.type)) {
             settings[key].each {device ->
                 if (device.displayName == json.name) {
-	                if (json.command == false) {
-						if (device.getSupportedCommands().any {it.name == "setStatus"}) {
+                    if (json.command == false) {
+                        if (device.getSupportedCommands().any {it.name == "setStatus"}) {
                             log.debug "Setting state ${json.type} = ${json.value}"
                             device.setStatus(json.value)
                             state.ignoreEvent = json;
                         }
-    				}
+                    }
                     else {
                         if (capability.containsKey("action")) {
                             def action = capability["action"]
@@ -546,13 +546,13 @@ def bridgeHandler(evt) {
 
 // Receive an event from a device
 def inputHandler(evt) {
-	if (
-    	state.ignoreEvent
-    	&& state.ignoreEvent.name == evt.displayName
+    if (
+        state.ignoreEvent
+        && state.ignoreEvent.name == evt.displayName
         && state.ignoreEvent.type == evt.name
         && state.ignoreEvent.value == evt.value
     ) {
-    	log.debug "Ignoring event ${state.ignoreEvent}"
+        log.debug "Ignoring event ${state.ignoreEvent}"
         state.ignoreEvent = false;
     }
     else {
