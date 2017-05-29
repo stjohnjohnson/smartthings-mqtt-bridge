@@ -290,7 +290,7 @@ function parseMQTTMessage (topic, message) {
             name: device,
             type: property,
             value: contents,
-            command: (!pieces[2] || pieces[2] && pieces[2] === 'command')
+            command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
         }
     }, function (error, resp) {
         if (error) {
