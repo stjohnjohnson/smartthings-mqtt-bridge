@@ -25,10 +25,15 @@ var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     ACCESS_LOG = path.join(CONFIG_DIR, 'access.log'),
     ERROR_LOG = path.join(CONFIG_DIR, 'error.log'),
     CURRENT_VERSION = require('./package').version,
-    TOPIC_STATE = 'state',
+    // The topic type to get state changes from smartthings
+    TOPIC_READ_STATE = 'state',
+    SUFFIX_READ_STATE = 'state_read_suffix',
+    // The topic type to send commands to smartthings
     TOPIC_COMMAND = 'command',
-    SUFFIX_STATE = 'state_suffix',
-    SUFFIX_COMMAND = 'command_suffix';
+    SUFFIX_COMMAND = 'command_suffix',
+    // The topic type to send state changes to smartthings
+    TOPIC_WRITE_STATE = 'set_state',
+    SUFFIX_WRITE_STATE = 'state_write_suffix';
 
 var app = express(),
     client,
@@ -111,11 +116,14 @@ function migrateState (version) {
     }
 
     // Default Suffixes
-    if (!config.mqtt[SUFFIX_STATE]) {
-        config.mqtt[SUFFIX_STATE] = '';
+    if (!config.mqtt[SUFFIX_READ_STATE]) {
+        config.mqtt[SUFFIX_READ_STATE] = '';
     }
     if (!config.mqtt[SUFFIX_COMMAND]) {
         config.mqtt[SUFFIX_COMMAND] = '';
+    }
+    if (!config.mqtt[SUFFIX_WRITE_STATE]) {
+        config.mqtt[SUFFIX_WRITE_STATE] = '';
     }
 
     // Default port
@@ -151,7 +159,7 @@ function migrateState (version) {
  * @param  {Result}  res            Result Object
  */
 function handlePushEvent (req, res) {
-    var topic = getTopicFor(req.body.name, req.body.type, TOPIC_STATE),
+    var topic = getTopicFor(req.body.name, req.body.type, TOPIC_READ_STATE),
         value = req.body.value;
 
     winston.info('Incoming message from SmartThings: %s = %s', topic, value);
@@ -182,6 +190,7 @@ function handleSubscribeEvent (req, res) {
     Object.keys(req.body.devices).forEach(function (property) {
         req.body.devices[property].forEach(function (device) {
             subscriptions.push(getTopicFor(device, property, TOPIC_COMMAND));
+            subscriptions.push(getTopicFor(device, property, TOPIC_WRITE_STATE));
         });
     });
 
@@ -215,8 +224,10 @@ function getTopicFor (device, property, type) {
 
     if (type === TOPIC_COMMAND) {
         suffix = config.mqtt[SUFFIX_COMMAND];
-    } else if (type === TOPIC_STATE) {
-        suffix = config.mqtt[SUFFIX_STATE];
+    } else if (type === TOPIC_READ_STATE) {
+        suffix = config.mqtt[SUFFIX_READ_STATE];
+    } else if (type === TOPIC_WRITE_STATE) {
+        suffix = config.mqtt[SUFFIX_WRITE_STATE];
     }
 
     if (suffix) {
@@ -240,11 +251,18 @@ function parseMQTTMessage (topic, message) {
     var pieces = topic.substr(config.mqtt.preface.length + 1).split('/'),
         device = pieces[0],
         property = pieces[1],
-        topicState = getTopicFor(device, property, TOPIC_STATE),
-        topicSwitchState = getTopicFor(device, 'switch', TOPIC_STATE),
+        topicReadState = getTopicFor(device, property, TOPIC_READ_STATE),
+        topicWriteState = getTopicFor(device, property, TOPIC_WRITE_STATE),
+        topicSwitchState = getTopicFor(device, 'switch', TOPIC_READ_STATE),
         topicLevelCommand = getTopicFor(device, 'level', TOPIC_COMMAND);
 
-    if (history[topicState] === contents) {
+    if (history[topicWriteState] === contents) {
+        history[topicReadState] = contents;
+        winston.info('Skipping duplicate message from: %s = %s', topic, contents);
+        return;
+    }
+    if (history[topicReadState] === contents) {
+        history[topicWriteState] = contents;
         winston.info('Skipping duplicate message from: %s = %s', topic, contents);
         return;
     }
@@ -271,7 +289,8 @@ function parseMQTTMessage (topic, message) {
         json: {
             name: device,
             type: property,
-            value: contents
+            value: contents,
+            command: (!pieces[2] || pieces[2] && pieces[2] === 'command')
         }
     }, function (error, resp) {
         if (error) {

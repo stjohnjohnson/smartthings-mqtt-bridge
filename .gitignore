@@ -38,3 +38,7 @@ config.yml
 state.json
 
 artifacts
+
+# IntelliJ Stuff
+.idea/
+smartthings-mqtt-bridge.iml
