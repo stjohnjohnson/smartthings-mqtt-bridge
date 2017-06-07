@@ -661,7 +661,13 @@ def actionLevel(device, attribute, value) {
 }
 
 def actionPresence(device, attribute, value) {
-    device.setPresence(value)
+	log.info("Setting presence");
+	if (value == "present") {
+    	device.arrived();
+    }
+    else if (value == "not present") {
+    	device.departed();
+    }
 }
 
 def actionConsumable(device, attribute, value) {
