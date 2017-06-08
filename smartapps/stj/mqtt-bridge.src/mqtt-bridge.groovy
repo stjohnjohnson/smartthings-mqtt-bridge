@@ -661,8 +661,7 @@ def actionLevel(device, attribute, value) {
 }
 
 def actionPresence(device, attribute, value) {
-	log.info("Setting presence");
-	if (value == "present") {
+    if (value == "present") {
     	device.arrived();
     }
     else if (value == "not present") {
