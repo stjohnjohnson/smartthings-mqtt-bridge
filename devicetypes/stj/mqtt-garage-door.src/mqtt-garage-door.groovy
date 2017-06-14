@@ -58,7 +58,7 @@ def close() {
     sendEvent(name: "door", value: "closing")
 }
 
-def setStatus(status) {
+def setStatus(type, status) {
 	log.debug("Setting status ${status}")
     sendEvent(name: "door", value: status)
 }

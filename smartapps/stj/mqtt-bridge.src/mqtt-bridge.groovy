@@ -527,7 +527,7 @@ def bridgeHandler(evt) {
                     if (json.command == false) {
                         if (device.getSupportedCommands().any {it.name == "setStatus"}) {
                             log.debug "Setting state ${json.type} = ${json.value}"
-                            device.setStatus(json.value)
+                            device.setStatus(json.type, json.value)
                             state.ignoreEvent = json;
                         }
                     }
