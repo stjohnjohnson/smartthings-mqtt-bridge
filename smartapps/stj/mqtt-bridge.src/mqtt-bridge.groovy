@@ -205,7 +205,8 @@ import groovy.transform.Field
         capability: "capability.presenceSensor",
         attributes: [
             "presence"
-        ]
+        ],
+        action: "actionPresence"
     ],
     "humiditySensors": [
         name: "Relative Humidity Measurement",
@@ -657,6 +658,15 @@ def actionColorTemperature(device, attribute, value) {
 
 def actionLevel(device, attribute, value) {
     device.setLevel(value as int)
+}
+
+def actionPresence(device, attribute, value) {
+    if (value == "present") {
+    	device.arrived();
+    }
+    else if (value == "not present") {
+    	device.departed();
+    }
 }
 
 def actionConsumable(device, attribute, value) {
