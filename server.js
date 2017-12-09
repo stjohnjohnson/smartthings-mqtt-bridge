@@ -27,6 +27,7 @@ var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     CURRENT_VERSION = require('./package').version,
     TOPIC_STATE = 'state',
     TOPIC_COMMAND = 'command',
+    RETAIN = 'retain',
     SUFFIX_STATE = 'state_suffix',
     SUFFIX_COMMAND = 'command_suffix';
 
@@ -118,6 +119,11 @@ function migrateState (version) {
         config.mqtt[SUFFIX_COMMAND] = '';
     }
 
+    // Default retain
+    if (config.mqtt[RETAIN] !== false) {
+        config.mqtt[RETAIN] = true;
+    }
+
     // Default port
     if (!config.port) {
         config.port = 8080;
@@ -158,7 +164,7 @@ function handlePushEvent (req, res) {
     history[topic] = value;
 
     client.publish(topic, value, {
-        retain: true
+        retain: config.mqtt[RETAIN]
     }, function () {
         res.send({
             status: 'OK'
