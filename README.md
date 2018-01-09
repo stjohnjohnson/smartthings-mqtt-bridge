@@ -63,6 +63,9 @@ mqtt:
     # username: AzureDiamond
     # password: hunter2
 
+    # MQTT retains state changes be default, retain mode can be disabled:
+    # retain: false
+
 # Port number to listen on
 port: 8080
 

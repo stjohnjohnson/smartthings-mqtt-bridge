@@ -33,7 +33,8 @@ var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     SUFFIX_COMMAND = 'command_suffix',
     // The topic type to send state changes to smartthings
     TOPIC_WRITE_STATE = 'set_state',
-    SUFFIX_WRITE_STATE = 'state_write_suffix';
+    SUFFIX_WRITE_STATE = 'state_write_suffix',
+    RETAIN = 'retain';
 
 var app = express(),
     client,
@@ -126,6 +127,11 @@ function migrateState (version) {
         config.mqtt[SUFFIX_WRITE_STATE] = '';
     }
 
+    // Default retain
+    if (config.mqtt[RETAIN] !== false) {
+        config.mqtt[RETAIN] = true;
+    }
+
     // Default port
     if (!config.port) {
         config.port = 8080;
@@ -166,7 +172,7 @@ function handlePushEvent (req, res) {
     history[topic] = value;
 
     client.publish(topic, value, {
-        retain: true
+        retain: config.mqtt[RETAIN]
     }, function () {
         res.send({
             status: 'OK'
