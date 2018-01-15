@@ -13,7 +13,7 @@ mqtt:
 
     # Suffix for the topics to send state back to SmartThings $PREFACE/$DEVICE_NAME/$PROPERTY/$STATE_WRITE_SUFFIX
     # your physical device or application should write to this topic to update the state of SmartThings devices that support setStatus
-    state_write_suffix: set_state
+    # state_write_suffix: set_state
 
     # Suffix for the command topics $PREFACE/$DEVICE_NAME/$PROPERTY/$COMMAND_SUFFIX
     # command_suffix: cmd
