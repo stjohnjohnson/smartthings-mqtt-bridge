@@ -525,10 +525,19 @@ def bridgeHandler(evt) {
         if (capability["attributes"].contains(json.type)) {
             settings[key].each {device ->
                 if (device.displayName == json.name) {
-                    if (capability.containsKey("action")) {
-                        def action = capability["action"]
-                        // Yes, this is calling the method dynamically
-                        "$action"(device, json.type, json.value)
+                    if (json.command == false) {
+                        if (device.getSupportedCommands().any {it.name == "setStatus"}) {
+                            log.debug "Setting state ${json.type} = ${json.value}"
+                            device.setStatus(json.type, json.value)
+                            state.ignoreEvent = json;
+                        }
+                    }
+                    else {
+                        if (capability.containsKey("action")) {
+                            def action = capability["action"]
+                            // Yes, this is calling the method dynamically
+                            "$action"(device, json.type, json.value)
+                        }
                     }
                 }
             }
@@ -538,17 +547,28 @@ def bridgeHandler(evt) {
 
 // Receive an event from a device
 def inputHandler(evt) {
-    def json = new JsonOutput().toJson([
-        path: "/push",
-        body: [
-            name: evt.displayName,
-            value: evt.value,
-            type: evt.name
-        ]
-    ])
+    if (
+        state.ignoreEvent
+        && state.ignoreEvent.name == evt.displayName
+        && state.ignoreEvent.type == evt.name
+        && state.ignoreEvent.value == evt.value
+    ) {
+        log.debug "Ignoring event ${state.ignoreEvent}"
+        state.ignoreEvent = false;
+    }
+    else {
+        def json = new JsonOutput().toJson([
+            path: "/push",
+            body: [
+                name: evt.displayName,
+                value: evt.value,
+                type: evt.name
+            ]
+        ])
 
-    log.debug "Forwarding device event to bridge: ${json}"
-    bridge.deviceNotification(json)
+        log.debug "Forwarding device event to bridge: ${json}"
+        bridge.deviceNotification(json)
+    }
 }
 
 // +---------------------------------+

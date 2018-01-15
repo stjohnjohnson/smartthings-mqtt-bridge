@@ -54,8 +54,16 @@ mqtt:
     # Preface for the topics $PREFACE/$DEVICE_NAME/$PROPERTY
     preface: smartthings
 
-    # Suffix for the state topics $PREFACE/$DEVICE_NAME/$PROPERTY/$STATE_SUFFIX
-    # state_suffix: state
+    # The write and read suffixes need to be different to be able to differentiate when state comes from SmartThings or when its coming from the physical device/application
+
+    # Suffix for the topics that receive state from SmartThings $PREFACE/$DEVICE_NAME/$PROPERTY/$STATE_READ_SUFFIX
+    # Your physical device or application should subscribe to this topic to get updated status from SmartThings
+    # state_read_suffix: state
+
+    # Suffix for the topics to send state back to SmartThings $PREFACE/$DEVICE_NAME/$PROPERTY/$STATE_WRITE_SUFFIX
+    # your physical device or application should write to this topic to update the state of SmartThings devices that support setStatus
+    # state_write_suffix: set_state
+
     # Suffix for the command topics $PREFACE/$DEVICE_NAME/$PROPERTY/$COMMAND_SUFFIX
     # command_suffix: cmd
 
