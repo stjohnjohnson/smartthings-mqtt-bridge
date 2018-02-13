@@ -264,13 +264,17 @@ function parseMQTTMessage (topic, message) {
 
     if (history[topicWriteState] === contents) {
         history[topicReadState] = contents;
-        winston.info('Skipping duplicate message from: %s = %s', topic, contents);
-        return;
+        if (config.mqtt[RETAIN] !== false) {
+            winston.info('Skipping duplicate message from: %s = %s', topic, contents);
+            return;
+        }
     }
     if (history[topicReadState] === contents) {
         history[topicWriteState] = contents;
-        winston.info('Skipping duplicate message from: %s = %s', topic, contents);
-        return;
+        if (config.mqtt[RETAIN] !== false) {
+            winston.info('Skipping duplicate message from: %s = %s', topic, contents);
+            return;
+        }
     }
     history[topic] = contents;
 
