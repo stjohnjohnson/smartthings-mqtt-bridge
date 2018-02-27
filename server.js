@@ -281,10 +281,10 @@ function parseMQTTMessage (topic, message) {
         return;
     }
 
-    // If sending switch data and there is already a level value, send level instead
+    // If sending switch data and there is already a nonzero level value, send level instead
     // SmartThings will turn the device on
     if (property === 'switch' && contents === 'on' &&
-        history[topicLevelCommand] !== undefined) {
+        history[topicLevelCommand] > 0) {
         winston.info('Passing level instead of switch on');
         property = 'level';
         contents = history[topicLevelCommand];
