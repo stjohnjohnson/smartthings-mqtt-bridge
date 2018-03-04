@@ -262,15 +262,12 @@ function parseMQTTMessage (topic, message) {
         topicSwitchState = getTopicFor(device, 'switch', TOPIC_READ_STATE),
         topicLevelCommand = getTopicFor(device, 'level', TOPIC_COMMAND);
 
-    if (history[topicWriteState] === contents) {
-        history[topicReadState] = contents;
-        winston.info('Skipping duplicate message from: %s = %s', topic, contents);
-        return;
-    }
-    if (history[topicReadState] === contents) {
-        history[topicWriteState] = contents;
-        winston.info('Skipping duplicate message from: %s = %s', topic, contents);
-        return;
+    // Deduplicate only if the incoming message topic is the same as the read state topic
+    if (topic === topicReadState) {
+        if (history[topic] === contents) {
+            winston.info('Skipping duplicate message from: %s = %s', topic, contents);
+            return;
+        }
     }
     history[topic] = contents;
 
