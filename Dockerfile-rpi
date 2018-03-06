@@ -1,4 +1,4 @@
-FROM hypriot/rpi-node:4
+FROM arm32v7/node:6
 MAINTAINER St. John Johnson <st.john.johnson@gmail.com> and Jeremiah Wuenschel <jeremiah.wuenschel@gmail.com>
 
 # Create our application direcory
