@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 
 # Copy and install dependencies
 COPY package.json /usr/src/app/
-RUN npm i --package-lock-only && npm audit fix --force &&  npm install --production
+RUN npm install --production
 
 # Copy everything else
 COPY . /usr/src/app
