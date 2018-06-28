@@ -33,8 +33,8 @@
     "body-parser": "^1.14.1",
     "express": "^4.13.3",
     "express-joi-validator": "^2.0.0",
-    "express-winston": "^1.2.0",
-    "joi": "^6.10.0",
+    "express-winston": "^2.5.0",
+    "joi": "^13.4.0",
     "js-yaml": "^3.4.3",
     "jsonfile": "^2.2.3",
     "mqtt": "^1.7.0",
@@ -43,8 +43,8 @@
     "winston": "^2.0.0"
   },
   "devDependencies": {
-    "jenkins-mocha": "^2.5.0",
-    "jscs": "^2.9.0",
+    "jenkins-mocha": "^6.0.0",
+    "jscs": "^3.0.7",
     "jshint": "^2.9.1"
   }
 }

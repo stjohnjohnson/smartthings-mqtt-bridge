@@ -1,4 +1,4 @@
-FROM node:4
+FROM node:alpine
 MAINTAINER St. John Johnson <st.john.johnson@gmail.com> and Jeremiah Wuenschel <jeremiah.wuenschel@gmail.com>
 
 # Create our application direcory
