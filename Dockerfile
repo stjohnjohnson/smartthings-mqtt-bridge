@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 
 # Copy and install dependencies
 COPY package.json /usr/src/app/
-RUN npm install --production
+RUN npm audit fix && npm install --production
 
 # Copy everything else
 COPY . /usr/src/app
