@@ -103,7 +103,8 @@ import groovy.transform.Field
         capability: "capability.contactSensor",
         attributes: [
             "contact"
-        ]
+        ],
+        action: "actionOpenClosed"
     ],
     "doorControl": [
         name: "Door Control",
@@ -611,11 +612,17 @@ def actionColor(device, attribute, value) {
     }
 }
 
+//Action for contactSensors,doorControl,garageDoors,valve and windowShades.
+//contactSensors don't have action but a simulated contact sensor can hence the hasCommand() check.
 def actionOpenClosed(device, attribute, value) {
     if (value == "open") {
-        device.open()
+		if (device.hasCommand("open")) {
+			device.open()
+		}       
     } else if (value == "closed") {
-        device.close()
+        if (device.hasCommand("close")) {
+			device.close()
+		}
     }
 }
 
