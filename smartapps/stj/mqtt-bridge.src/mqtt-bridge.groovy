@@ -29,6 +29,13 @@ import groovy.transform.Field
             "acceleration"
         ]
     ],
+	"airQualitySensors": [
+		name: "AirQuality Sensor",
+		capability: "capability.airQualitySensor",
+		attributes: [
+			"airQuality"
+		]
+	],
     "alarm": [
         name: "Alarm",
         capability: "capability.alarm",
