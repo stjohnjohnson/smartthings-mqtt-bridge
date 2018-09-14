@@ -120,6 +120,14 @@ import groovy.transform.Field
         ],
         action: "actionOpenClosed"
     ],
+	"dustSensors": [
+		name: "Dust Sensor",
+		capability: "capability.dustSensor",
+		attributes: [
+			"fineDustLevel",
+			"dustLevel"
+		]
+	],
     "energyMeter": [
         name: "Energy Meter",
         capability: "capability.energyMeter",
