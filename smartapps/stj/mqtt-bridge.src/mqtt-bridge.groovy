@@ -29,6 +29,13 @@ import groovy.transform.Field
             "acceleration"
         ]
     ],
+	"airQualitySensors": [
+		name: "AirQuality Sensor",
+		capability: "capability.airQualitySensor",
+		attributes: [
+			"airQuality"
+		]
+	],
     "alarm": [
         name: "Alarm",
         capability: "capability.alarm",
@@ -113,6 +120,14 @@ import groovy.transform.Field
         ],
         action: "actionOpenClosed"
     ],
+	"dustSensors": [
+		name: "Dust Sensor",
+		capability: "capability.dustSensor",
+		attributes: [
+			"fineDustLevel",
+			"dustLevel"
+		]
+	],
     "energyMeter": [
         name: "Energy Meter",
         capability: "capability.energyMeter",
