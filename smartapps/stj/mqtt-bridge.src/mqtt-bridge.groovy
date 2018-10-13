@@ -161,7 +161,8 @@ import groovy.transform.Field
         name: "Switch Level",
         capability: "capability.switchLevel",
         attributes: [
-            "level"
+            "level",
+            "switch"
         ],
         action: "actionLevel"
     ],
@@ -699,7 +700,18 @@ def actionColorTemperature(device, attribute, value) {
 }
 
 def actionLevel(device, attribute, value) {
-    device.setLevel(value as int)
+    switch(attribute) {
+        case "level":
+            device.setLevel(value as int)
+        break
+        case "switch":
+            if (value == "off") {
+                device.off()
+            } else if (value == "on") {
+                device.on()
+            }
+        break
+    }
 }
 
 def actionPresence(device, attribute, value) {
