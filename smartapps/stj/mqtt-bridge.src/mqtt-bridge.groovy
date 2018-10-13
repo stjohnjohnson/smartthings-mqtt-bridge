@@ -238,6 +238,13 @@ import groovy.transform.Field
         ],
         action: "actionOnOff"
     ],
+    "sceneSwitch": [
+        name: "Scene Switch",
+        capability: "capability.switch",
+        attributes: [
+            "scene"
+        ]
+    ],
     "shockSensor": [
         name: "Shock Sensor",
         capability: "capability.shockSensor",
