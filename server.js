@@ -34,6 +34,7 @@ var CONFIG_DIR = process.env.CONFIG_DIR || process.cwd(),
     // The topic type to send state changes to smartthings
     TOPIC_WRITE_STATE = 'set_state',
     SUFFIX_WRITE_STATE = 'state_write_suffix',
+    WINSTON_FILE_LOG_LEVEL = 'winston_file_log_level',
     RETAIN = 'retain';
 
 var app = express(),
@@ -135,6 +136,11 @@ function migrateState (version) {
     // Default port
     if (!config.port) {
         config.port = 8080;
+    }
+
+    // Default file transport logging level
+    if (!config[WINSTON_FILE_LOG_LEVEL]) {
+        config[WINSTON_FILE_LOG_LEVEL] = 'info';
     }
 
     // Default protocol
@@ -322,6 +328,8 @@ async.series([
 
         winston.info('Perfoming configuration migration');
         migrateState(state.version);
+
+        winston.default.transports.file.level = config[WINSTON_FILE_LOG_LEVEL];
 
         process.nextTick(next);
     },
