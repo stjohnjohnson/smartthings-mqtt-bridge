@@ -401,6 +401,13 @@ import groovy.transform.Field
             "touch"
         ]
     ],
+    "ultravioletIndex": [
+        name: "UV Index",
+        capability: "capability.ultravioletIndex",
+        attributes: [
+            "ultravioletIndex"
+        ]
+    ],
     "valve": [
         name: "Valve",
         capability: "capability.valve",
