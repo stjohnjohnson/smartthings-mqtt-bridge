@@ -262,7 +262,6 @@ function parseMQTTMessage (topic, message) {
         device = pieces[0],
         property = pieces[1],
         topicReadState = getTopicFor(device, property, TOPIC_READ_STATE),
-        //topicWriteState = getTopicFor(device, property, TOPIC_WRITE_STATE),
         topicSwitchState = getTopicFor(device, 'switch', TOPIC_READ_STATE),
         topicLevelCommand = getTopicFor(device, 'level', TOPIC_COMMAND);
 
