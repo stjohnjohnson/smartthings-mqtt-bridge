@@ -195,8 +195,12 @@ function handleSubscribeEvent (req, res) {
     subscriptions = [];
     Object.keys(req.body.devices).forEach(function (property) {
         req.body.devices[property].forEach(function (device) {
-            subscriptions.push(getTopicFor(device, property, TOPIC_COMMAND));
-            subscriptions.push(getTopicFor(device, property, TOPIC_WRITE_STATE));
+            var cmdTopic = getTopicFor(device, property, TOPIC_COMMAND);
+            var writeTopic = getTopicFor(device, property, TOPIC_WRITE_STATE);
+            subscriptions.push(cmdTopic);
+            if (writeTopic !== cmdTopic) {
+                subscriptions.push(writeTopic);
+            }
         });
     });
 
@@ -258,7 +262,7 @@ function parseMQTTMessage (topic, message) {
         device = pieces[0],
         property = pieces[1],
         topicReadState = getTopicFor(device, property, TOPIC_READ_STATE),
-        topicWriteState = getTopicFor(device, property, TOPIC_WRITE_STATE),
+        //topicWriteState = getTopicFor(device, property, TOPIC_WRITE_STATE),
         topicSwitchState = getTopicFor(device, 'switch', TOPIC_READ_STATE),
         topicLevelCommand = getTopicFor(device, 'level', TOPIC_COMMAND);
 
