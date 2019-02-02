@@ -29,13 +29,13 @@ import groovy.transform.Field
             "acceleration"
         ]
     ],
-	"airQualitySensors": [
-		name: "AirQuality Sensor",
-		capability: "capability.airQualitySensor",
-		attributes: [
-			"airQuality"
-		]
-	],
+    "airQualitySensors": [
+        name: "AirQuality Sensor",
+        capability: "capability.airQualitySensor",
+        attributes: [
+            "airQuality"
+        ]
+    ],
     "alarm": [
         name: "Alarm",
         capability: "capability.alarm",
@@ -120,14 +120,14 @@ import groovy.transform.Field
         ],
         action: "actionOpenClosed"
     ],
-	"dustSensors": [
-		name: "Dust Sensor",
-		capability: "capability.dustSensor",
-		attributes: [
-			"fineDustLevel",
-			"dustLevel"
-		]
-	],
+    "dustSensors": [
+        name: "Dust Sensor",
+        capability: "capability.dustSensor",
+        attributes: [
+            "fineDustLevel",
+            "dustLevel"
+        ]
+    ],
     "energyMeter": [
         name: "Energy Meter",
         capability: "capability.energyMeter",
@@ -228,7 +228,8 @@ import groovy.transform.Field
         capability: "capability.relativeHumidityMeasurement",
         attributes: [
             "humidity"
-        ]
+        ],
+        action: "actionHumiditySensors"
     ],
     "relaySwitch": [
         name: "Relay Switch",
@@ -316,7 +317,8 @@ import groovy.transform.Field
         capability: "capability.temperatureMeasurement",
         attributes: [
             "temperature"
-        ]
+        ],
+        action: "actionTemperatureSensors"
     ],
     "thermostat": [
         name: "Thermostat",
@@ -560,12 +562,22 @@ def bridgeHandler(evt) {
                             device.setStatus(json.type, json.value)
                             state.ignoreEvent = json;
                         }
+                        else {
+                            log.debug "Device doesn't support setStatus command."
+                        }
                     }
                     else {
                         if (capability.containsKey("action")) {
                             def action = capability["action"]
                             // Yes, this is calling the method dynamically
                             "$action"(device, json.type, json.value)
+                        }
+                        else if (device.getSupportedCommands().any {it.name == json.type}) {
+                            log.debug "Calling device command ${json.type} with ${json.value}"
+                            device."$json.type"(json.value)
+                        }
+                        else {
+                            log.debug "Device doesn't support ${json.type} command."
                         }
                     }
                 }
@@ -705,16 +717,36 @@ def actionColorTemperature(device, attribute, value) {
     device.setColorTemperature(value as int)
 }
 
+//Temperature Sensors don't have commands but a simulated sensor might hence the hasCommand() check.
+def actionTemperatureSensors(device, attribute, value) {
+    if (device.hasCommand("temperature")) {
+        device.temperature(value as int)
+    }
+    if (device.hasCommand("setTemperature")) {
+        device.setTemperature(value as int)
+    }
+}
+
+//Humidity Sensors don't have commands but a simulated sensor might hence the hasCommand() check.
+def actionHumiditySensors(device, attribute, value) {
+    if (device.hasCommand("humidity")) {
+        device.humidity(value as int)
+    }
+    if (device.hasCommand("setHumidity")) {
+        device.setHumidity(value as int)
+    }
+}
+
 def actionLevel(device, attribute, value) {
     device.setLevel(value as int)
 }
 
 def actionPresence(device, attribute, value) {
     if (value == "present") {
-    	device.arrived();
+        device.arrived();
     }
     else if (value == "not present") {
-    	device.departed();
+        device.departed();
     }
 }
 
