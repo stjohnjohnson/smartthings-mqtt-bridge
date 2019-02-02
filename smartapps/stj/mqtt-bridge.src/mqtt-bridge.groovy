@@ -616,13 +616,13 @@ def actionColor(device, attribute, value) {
 //contactSensors don't have action but a simulated contact sensor can hence the hasCommand() check.
 def actionOpenClosed(device, attribute, value) {
     if (value == "open") {
-		if (device.hasCommand("open")) {
-			device.open()
-		}       
+        if (device.hasCommand("open")) {
+            device.open()
+        }
     } else if (value == "closed") {
         if (device.hasCommand("close")) {
-			device.close()
-		}
+            device.close()
+        }
     }
 }
 
