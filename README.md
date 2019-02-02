@@ -39,6 +39,27 @@ $ mqtt pub -t 'smartthings/Fireplace Lights/switch'  -m 'off'
 # Light goes off in SmartThings
 ```
 
+A special command can also be sent (by using a different suffix e.g. set_state). The Bridge will subscribe to changes 
+in topics ending in set_state for all devices. Updates to these topics triggers a setStatus command on the device, 
+the device handler has to support this command: 
+
+```
+command "setStatus"
+
+...
+
+def setStatus(type, status) {
+    log.trace("Setting status ${type}: ${status}")
+
+    sendEvent(name: type, value: status)
+}
+```
+
+```
+$ mqtt pub -t 'smartthings/Living Room Temperature/temperature/set_state'  -m '72'
+# Virtual temperature sensor is updated to reflect the new temperature
+```
+
 # Configuration
 
 The bridge has one yaml file for configuration:
@@ -46,7 +67,7 @@ The bridge has one yaml file for configuration:
 ```
 ---
 mqtt:
-    # Specify your MQTT Broker URL here
+    # Specify your MQTT Broker's hostname or IP address here
     host: mqtt://localhost
     # Example from CloudMQTT
     # host: mqtt:///m10.cloudmqtt.com:19427
@@ -65,6 +86,7 @@ mqtt:
     # state_write_suffix: set_state
 
     # Suffix for the command topics $PREFACE/$DEVICE_NAME/$PROPERTY/$COMMAND_SUFFIX
+    # your physical device or application should write to this topic to execute commands in SmartThings devices that support them
     # command_suffix: cmd
 
     # Other optional settings from https://www.npmjs.com/package/mqtt#mqttclientstreambuilder-options
