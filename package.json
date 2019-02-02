@@ -1,6 +1,6 @@
 {
   "name": "smartthings-mqtt-bridge",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Bridge between SmartThings and an MQTT broker",
   "main": "server.js",
   "bin": {

@@ -560,12 +560,22 @@ def bridgeHandler(evt) {
                             device.setStatus(json.type, json.value)
                             state.ignoreEvent = json;
                         }
+                        else {
+                        	log.debug "Device doesn't support setStatus command."
+                        }
                     }
                     else {
                         if (capability.containsKey("action")) {
                             def action = capability["action"]
                             // Yes, this is calling the method dynamically
                             "$action"(device, json.type, json.value)
+                        }
+                        else if (device.getSupportedCommands().any {it.name == json.type}) {
+                            log.debug "Calling device command ${json.type} with ${json.value}"
+                        	device."$json.type"(json.value)
+                        }
+                        else {
+                        	log.debug "Device doesn't support ${json.type} command."
                         }
                     }
                 }
