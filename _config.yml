@@ -24,3 +24,6 @@ mqtt:
 
 # Port number to listen on
 port: 8080
+
+# Log level for Winston's file transports (set to `error` to reduce logging to a minimum)
+# winston_file_log_level: error
