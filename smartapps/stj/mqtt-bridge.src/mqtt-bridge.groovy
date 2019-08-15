@@ -110,7 +110,8 @@ import groovy.transform.Field
         name: "Door Control",
         capability: "capability.doorControl",
         attributes: [
-            "door"
+             "door",
+             "opensensor", "closedsensor", "switch", "notify"
         ],
         action: "actionOpenClosed"
     ],
@@ -121,14 +122,14 @@ import groovy.transform.Field
             "energy"
         ]
     ],
-    "garageDoors": [
+    /*"garageDoors": [
         name: "Garage Door Control",
         capability: "capability.garageDoorControl",
         attributes: [
             "door"
         ],
         action: "actionOpenClosed"
-    ],
+    ],*/
     "illuminanceMeasurement": [
         name: "Illuminance Measurement",
         capability: "capability.illuminanceMeasurement",
@@ -514,10 +515,11 @@ def bridgeHandler(evt) {
     if (json.type == "notify") {
         if (json.name == "Contacts") {
             sendNotificationToContacts("${json.value}", recipients)
-        } else {
+            return
+        } else if (json.name == "System") {
             sendNotificationEvent("${json.value}")
+            return
         }
-        return
     }
 
     // @NOTE this is stored AWFUL, we need a faster lookup table
@@ -612,8 +614,6 @@ def actionColor(device, attribute, value) {
     }
 }
 
-//Action for contactSensors,doorControl,garageDoors,valve and windowShades.
-//contactSensors don't have action but a simulated contact sensor can hence the hasCommand() check.
 def actionOpenClosed(device, attribute, value) {
     if (value == "open") {
         if (device.hasCommand("open")) {
