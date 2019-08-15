@@ -1,3 +1,4 @@
+
 /*jslint node: true */
 'use strict';
 
@@ -296,7 +297,8 @@ function parseMQTTMessage (topic, message) {
             name: device,
             type: property,
             value: contents,
-            command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
+            //command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
+            command: (pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND]) || false
         }
     }, function (error, resp) {
         if (error) {
