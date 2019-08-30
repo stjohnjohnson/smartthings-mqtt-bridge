@@ -316,7 +316,8 @@ import groovy.transform.Field
         capability: "capability.temperatureMeasurement",
         attributes: [
             "temperature"
-        ]
+        ],
+        action: "actionTemperature"
     ],
     "thermostat": [
         name: "Thermostat",
@@ -744,6 +745,10 @@ def actionHeatingThermostat(device, attribute, value) {
 
 def actionThermostatMode(device, attribute, value) {
     device.setThermostatMode(value)
+}
+
+def actionTemperature(device, attribute, value) {
+    device.setTemperature(value as int)
 }
 
 def actionTimedSession(device, attribute, value) {
