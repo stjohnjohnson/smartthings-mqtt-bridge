@@ -228,7 +228,8 @@ import groovy.transform.Field
         capability: "capability.relativeHumidityMeasurement",
         attributes: [
             "humidity"
-        ]
+        ],
+        action: "actionHumidity"
     ],
     "relaySwitch": [
         name: "Relay Switch",
@@ -749,6 +750,10 @@ def actionThermostatMode(device, attribute, value) {
 
 def actionTemperature(device, attribute, value) {
     device.setTemperature(value as int)
+}
+
+def actionHumidity(device, attribute, value) {
+    device.setHumidity(value as int)
 }
 
 def actionTimedSession(device, attribute, value) {
