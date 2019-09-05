@@ -110,7 +110,8 @@ import groovy.transform.Field
         capability: "capability.contactSensor",
         attributes: [
             "contact"
-        ]
+        ],
+        action: "actionOpenClosed"
     ],
     "doorControl": [
         name: "Door Control",
