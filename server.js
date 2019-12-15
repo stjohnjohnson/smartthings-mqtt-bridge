@@ -256,7 +256,7 @@ function getTopicFor (device, property, type) {
  */
 function parseMQTTMessage (topic, message) {
     var contents = message.toString();
-    winston.info('Incoming message from MQTT: %s = %s', topic, contents);
+    //winston.info('Incoming message from MQTT: %s = %s', topic, contents);
 
     // Remove the preface from the topic before splitting it
     var pieces = topic.substr(config.mqtt.preface.length + 1).split('/'),
@@ -268,12 +268,13 @@ function parseMQTTMessage (topic, message) {
 
     // Deduplicate only if the incoming message topic is the same as the read state topic
     if (topic === topicReadState) {
-        if (history[topic] === contents) {
+		if (history[topic] === contents) {
             winston.info('Skipping duplicate message from: %s = %s', topic, contents);
             return;
         }
     }
     history[topic] = contents;
+	winston.info('Incoming message from MQTT: %s = %s', topic, contents);
 
     // If sending level data and the switch is off, don't send anything
     // SmartThings will turn the device on (which is confusing)
