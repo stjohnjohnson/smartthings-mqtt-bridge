@@ -111,7 +111,7 @@ import groovy.transform.Field
         capability: "capability.doorControl",
         attributes: [
              "door",
-             "opensensor", "closedsensor", "switch", "notify"
+             "opensensor", "closedsensor", "notify"
         ],
         action: "actionOpenClosed"
     ],
@@ -529,10 +529,17 @@ def bridgeHandler(evt) {
             settings[key].each {device ->
                 if (device.displayName == json.name) {
                     if (json.command == false) {
+                    	//setStatus is exposed by Espurna Garage Door Device Handler V2
+                        //invoke action as fallback if setStatus is absent
                         if (device.getSupportedCommands().any {it.name == "setStatus"}) {
                             log.debug "Setting state ${json.type} = ${json.value}"
                             device.setStatus(json.type, json.value)
                             state.ignoreEvent = json;
+                        }
+                        else if (capability.containsKey("action")) {
+                            def action = capability["action"]
+                            // Yes, this is calling the method dynamically
+                            "$action"(device, json.type, json.value)
                         }
                     }
                     else {
