@@ -110,13 +110,15 @@ import groovy.transform.Field
         capability: "capability.contactSensor",
         attributes: [
             "contact"
-        ]
+        ],
+        action: "actionOpenClosed"
     ],
     "doorControl": [
         name: "Door Control",
         capability: "capability.doorControl",
         attributes: [
-            "door"
+             "door",
+             "opensensor", "closedsensor", "notify"
         ],
         action: "actionOpenClosed"
     ],
@@ -135,14 +137,14 @@ import groovy.transform.Field
             "energy"
         ]
     ],
-    "garageDoors": [
+    /*"garageDoors": [
         name: "Garage Door Control",
         capability: "capability.garageDoorControl",
         attributes: [
             "door"
         ],
         action: "actionOpenClosed"
-    ],
+    ],*/
     "illuminanceMeasurement": [
         name: "Illuminance Measurement",
         capability: "capability.illuminanceMeasurement",
@@ -542,10 +544,11 @@ def bridgeHandler(evt) {
     if (json.type == "notify") {
         if (json.name == "Contacts") {
             sendNotificationToContacts("${json.value}", recipients)
-        } else {
+            return
+        } else if (json.name == "System") {
             sendNotificationEvent("${json.value}")
+            return
         }
-        return
     }
 
     // @NOTE this is stored AWFUL, we need a faster lookup table
@@ -555,10 +558,17 @@ def bridgeHandler(evt) {
             settings[key].each {device ->
                 if (device.displayName == json.name) {
                     if (json.command == false) {
+                    	//setStatus is exposed by Espurna Garage Door Device Handler V2
+                        //invoke action as fallback if setStatus is absent
                         if (device.getSupportedCommands().any {it.name == "setStatus"}) {
                             log.debug "Setting state ${json.type} = ${json.value}"
                             device.setStatus(json.type, json.value)
                             state.ignoreEvent = json;
+                        }
+                        else if (capability.containsKey("action")) {
+                            def action = capability["action"]
+                            // Yes, this is calling the method dynamically
+                            "$action"(device, json.type, json.value)
                         }
                     }
                     else {
@@ -642,9 +652,13 @@ def actionColor(device, attribute, value) {
 
 def actionOpenClosed(device, attribute, value) {
     if (value == "open") {
-        device.open()
+        if (device.hasCommand("open")) {
+            device.open()
+        }
     } else if (value == "closed") {
-        device.close()
+        if (device.hasCommand("close")) {
+            device.close()
+        }
     }
 }
 

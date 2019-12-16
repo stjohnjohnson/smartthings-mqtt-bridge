@@ -1,3 +1,4 @@
+
 /*jslint node: true */
 'use strict';
 
@@ -195,8 +196,12 @@ function handleSubscribeEvent (req, res) {
     subscriptions = [];
     Object.keys(req.body.devices).forEach(function (property) {
         req.body.devices[property].forEach(function (device) {
-            subscriptions.push(getTopicFor(device, property, TOPIC_COMMAND));
-            subscriptions.push(getTopicFor(device, property, TOPIC_WRITE_STATE));
+            var cmdTopic = getTopicFor(device, property, TOPIC_COMMAND);
+            var writeTopic = getTopicFor(device, property, TOPIC_WRITE_STATE);
+            subscriptions.push(cmdTopic);
+            if (writeTopic !== cmdTopic) {
+                subscriptions.push(writeTopic);
+            }
         });
     });
 
@@ -251,25 +256,25 @@ function getTopicFor (device, property, type) {
  */
 function parseMQTTMessage (topic, message) {
     var contents = message.toString();
-    winston.info('Incoming message from MQTT: %s = %s', topic, contents);
+    //winston.info('Incoming message from MQTT: %s = %s', topic, contents);
 
     // Remove the preface from the topic before splitting it
     var pieces = topic.substr(config.mqtt.preface.length + 1).split('/'),
         device = pieces[0],
         property = pieces[1],
         topicReadState = getTopicFor(device, property, TOPIC_READ_STATE),
-        topicWriteState = getTopicFor(device, property, TOPIC_WRITE_STATE),
         topicSwitchState = getTopicFor(device, 'switch', TOPIC_READ_STATE),
         topicLevelCommand = getTopicFor(device, 'level', TOPIC_COMMAND);
 
     // Deduplicate only if the incoming message topic is the same as the read state topic
     if (topic === topicReadState) {
-        if (history[topic] === contents) {
+		if (history[topic] === contents) {
             winston.info('Skipping duplicate message from: %s = %s', topic, contents);
             return;
         }
     }
     history[topic] = contents;
+	winston.info('Incoming message from MQTT: %s = %s', topic, contents);
 
     // If sending level data and the switch is off, don't send anything
     // SmartThings will turn the device on (which is confusing)
@@ -293,7 +298,8 @@ function parseMQTTMessage (topic, message) {
             name: device,
             type: property,
             value: contents,
-            command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
+            //command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
+            command: (pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND]) || false
         }
     }, function (error, resp) {
         if (error) {
