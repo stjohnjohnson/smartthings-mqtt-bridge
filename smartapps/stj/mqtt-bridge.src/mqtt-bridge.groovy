@@ -4,6 +4,7 @@
  *  Authors
  *   - st.john.johnson@gmail.com
  *   - jeremiah.wuenschel@gmail.com
+ *   - Indu Prakash
  *
  *  Copyright 2016
  *
@@ -44,13 +45,7 @@ import groovy.transform.Field
             "battery"
         ]
     ],
-    "beacon": [
-        name: "Beacon",
-        capability: "capability.beacon",
-        attributes: [
-            "presence"
-        ]
-    ],
+
     "button": [
         name: "Button",
         capability: "capability.button",
@@ -58,38 +53,7 @@ import groovy.transform.Field
             "button"
         ]
     ],
-    "carbonDioxideMeasurement": [
-        name: "Carbon Dioxide Measurement",
-        capability: "capability.carbonDioxideMeasurement",
-        attributes: [
-            "carbonDioxide"
-        ]
-    ],
-    "carbonMonoxideDetector": [
-        name: "Carbon Monoxide Detector",
-        capability: "capability.carbonMonoxideDetector",
-        attributes: [
-            "carbonMonoxide"
-        ]
-    ],
-    "colorControl": [
-        name: "Color Control",
-        capability: "capability.colorControl",
-        attributes: [
-            "hue",
-            "saturation",
-            "color"
-        ],
-        action: "actionColor"
-    ],
-    "colorTemperature": [
-        name: "Color Temperature",
-        capability: "capability.colorTemperature",
-        attributes: [
-            "colorTemperature"
-        ],
-        action: "actionColorTemperature"
-    ],
+
     "consumable": [
         name: "Consumable",
         capability: "capability.consumable",
@@ -110,8 +74,7 @@ import groovy.transform.Field
         name: "Door Control",
         capability: "capability.doorControl",
         attributes: [
-             "door",
-             "opensensor", "closedsensor", "notify"
+             "door", "notify"
         ],
         action: "actionOpenClosed"
     ],
@@ -130,13 +93,6 @@ import groovy.transform.Field
         ],
         action: "actionOpenClosed"
     ],*/
-    "illuminanceMeasurement": [
-        name: "Illuminance Measurement",
-        capability: "capability.illuminanceMeasurement",
-        attributes: [
-            "illuminance"
-        ]
-    ],
     "imageCapture": [
         name: "Image Capture",
         capability: "capability.imageCapture",
@@ -152,22 +108,7 @@ import groovy.transform.Field
         ],
         action: "actionLevel"
     ],
-    "lock": [
-        name: "Lock",
-        capability: "capability.lock",
-        attributes: [
-            "lock"
-        ],
-        action: "actionLock"
-    ],
-    "mediaController": [
-        name: "Media Controller",
-        capability: "capability.mediaController",
-        attributes: [
-            "activities",
-            "currentActivity"
-        ]
-    ],
+
     "motionSensors": [
         name: "Motion Sensor",
         capability: "capability.motionSensor",
@@ -175,25 +116,6 @@ import groovy.transform.Field
             "motion"
         ],
         action: "actionActiveInactive"
-    ],
-    "musicPlayer": [
-        name: "Music Player",
-        capability: "capability.musicPlayer",
-        attributes: [
-            "status",
-            "level",
-            "trackDescription",
-            "trackData",
-            "mute"
-        ],
-        action: "actionMusicPlayer"
-    ],
-    "pHMeasurement": [
-        name: "pH Measurement",
-        capability: "capability.pHMeasurement",
-        attributes: [
-            "pH"
-        ]
     ],
     "powerMeters": [
         name: "Power Meter",
@@ -232,43 +154,7 @@ import groovy.transform.Field
             "shock"
         ]
     ],
-    "signalStrength": [
-        name: "Signal Strength",
-        capability: "capability.signalStrength",
-        attributes: [
-            "lqi",
-            "rssi"
-        ]
-    ],
-    "sleepSensor": [
-        name: "Sleep Sensor",
-        capability: "capability.sleepSensor",
-        attributes: [
-            "sleeping"
-        ]
-    ],
-    "smokeDetector": [
-        name: "Smoke Detector",
-        capability: "capability.smokeDetector",
-        attributes: [
-            "smoke"
-        ]
-    ],
-    "soundSensor": [
-        name: "Sound Sensor",
-        capability: "capability.soundSensor",
-        attributes: [
-            "sound"
-        ]
-    ],
-    "stepSensor": [
-        name: "Step Sensor",
-        capability: "capability.stepSensor",
-        attributes: [
-            "steps",
-            "goal"
-        ]
-    ],
+
     "switches": [
         name: "Switch",
         capability: "capability.switch",
@@ -277,13 +163,7 @@ import groovy.transform.Field
         ],
         action: "actionOnOff"
     ],
-    "soundPressureLevel": [
-        name: "Sound Pressure Level",
-        capability: "capability.soundPressureLevel",
-        attributes: [
-            "soundPressureLevel"
-        ]
-    ],
+
     "tamperAlert": [
         name: "Tamper Alert",
         capability: "capability.tamperAlert",
@@ -365,15 +245,6 @@ import groovy.transform.Field
             "threeAxis"
         ]
     ],
-    "timedSession": [
-        name: "Timed Session",
-        capability: "capability.timedSession",
-        attributes: [
-            "timeRemaining",
-            "sessionStatus"
-        ],
-        action: "actionTimedSession"
-    ],
     "touchSensor": [
         name: "Touch Sensor",
         capability: "capability.touchSensor",
@@ -381,14 +252,7 @@ import groovy.transform.Field
             "touch"
         ]
     ],
-    "valve": [
-        name: "Valve",
-        capability: "capability.valve",
-        attributes: [
-            "contact"
-        ],
-        action: "actionOpenClosed"
-    ],
+
     "voltageMeasurement": [
         name: "Voltage Measurement",
         capability: "capability.voltageMeasurement",
@@ -402,14 +266,6 @@ import groovy.transform.Field
         attributes: [
             "water"
         ]
-    ],
-    "windowShades": [
-        name: "Window Shade",
-        capability: "capability.windowShade",
-        attributes: [
-            "windowShade"
-        ],
-        action: "actionOpenClosed"
     ]
 ]
 
@@ -478,6 +334,9 @@ def initialize() {
 
     // Update the bridge
     updateSubscription()
+    
+    sendBatteryStatuses()
+    runIn(5, sendBatteryStatuses)
 }
 
 // Update the bridge"s subscription
@@ -581,6 +440,30 @@ def inputHandler(evt) {
     }
 }
 
+
+def sendBatteryStatuses() {
+	//https://docs.smartthings.com/en/latest/ref-docs/device-ref.html
+	def devicesWithBattery = settings["battery"]
+    log.debug "sendBatteryStatuses ${devicesWithBattery}"
+	devicesWithBattery.each{device->
+		sendBatteryStatus(device)
+	}
+}
+
+def sendBatteryStatus(device) { 
+    def json = new JsonOutput().toJson([
+        path: "/push",
+        body: [
+            name: device.displayName,
+            value: device.currentState("battery"),
+            type: "battery"
+        ]
+    ])
+
+    log.debug "sendBatteryStatus: ${json}"
+    bridge.deviceNotification(json)
+}
+
 // +---------------------------------+
 // | WARNING, BEYOND HERE BE DRAGONS |
 // +---------------------------------+
@@ -601,22 +484,6 @@ def actionAlarm(device, attribute, value) {
         break
         case "both":
             device.both()
-        break
-    }
-}
-
-def actionColor(device, attribute, value) {
-    switch (attribute) {
-        case "hue":
-            device.setHue(value as float)
-        break
-        case "saturation":
-            device.setSaturation(value as float)
-        break
-        case "color":
-            def values = value.split(',')
-            def colormap = ["hue": values[0] as float, "saturation": values[1] as float]
-            device.setColor(colormap)
         break
     }
 }
@@ -649,47 +516,6 @@ def actionActiveInactive(device, attribute, value) {
     }
 }
 
-def actionThermostat(device, attribute, value) {
-    switch(attribute) {
-        case "heatingSetpoint":
-            device.setHeatingSetpoint(value)
-        break
-        case "coolingSetpoint":
-            device.setCoolingSetpoint(value)
-        break
-        case "thermostatMode":
-            device.setThermostatMode(value)
-        break
-        case "thermostatFanMode":
-            device.setThermostatFanMode(value)
-        break
-    }
-}
-
-def actionMusicPlayer(device, attribute, value) {
-    switch(attribute) {
-        case "level":
-            device.setLevel(value)
-        break
-        case "mute":
-            if (value == "muted") {
-                device.mute()
-            } else if (value == "unmuted") {
-                device.unmute()
-            }
-        break
-        case "status":
-            if (device.getSupportedCommands().any {it.name == "setStatus"}) {
-                device.setStatus(value)
-            }
-        break
-    }
-}
-
-def actionColorTemperature(device, attribute, value) {
-    device.setColorTemperature(value as int)
-}
-
 def actionLevel(device, attribute, value) {
     device.setLevel(value as int)
 }
@@ -705,34 +531,4 @@ def actionPresence(device, attribute, value) {
 
 def actionConsumable(device, attribute, value) {
     device.setConsumableStatus(value)
-}
-
-def actionLock(device, attribute, value) {
-    if (value == "locked") {
-        device.lock()
-    } else if (value == "unlocked") {
-        device.unlock()
-    }
-}
-
-def actionCoolingThermostat(device, attribute, value) {
-    device.setCoolingSetpoint(value)
-}
-
-def actionThermostatFan(device, attribute, value) {
-    device.setThermostatFanMode(value)
-}
-
-def actionHeatingThermostat(device, attribute, value) {
-    device.setHeatingSetpoint(value)
-}
-
-def actionThermostatMode(device, attribute, value) {
-    device.setThermostatMode(value)
-}
-
-def actionTimedSession(device, attribute, value) {
-    if (attribute == "timeRemaining") {
-        device.setTimeRemaining(value)
-    }
 }
