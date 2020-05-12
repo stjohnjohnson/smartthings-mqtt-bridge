@@ -149,7 +149,7 @@ $ pm2 restart smartthings-mqtt-bridge
 2. Install the [Device Handler][dt] in the [Device Handler IDE][ide-dt] using "Create via code"
 3. Add the "MQTT Device" device in the [My Devices IDE][ide-mydev]. Enter MQTT Device (or whatever) for the name. Select "MQTT Bridge" for the type. The other values are up to you.
 4. Configure the "MQTT Device" in the [My Devices IDE][ide-mydev] with the IP Address, Port, and MAC Address of the machine running the Docker container
-4. Install the [Smart App][app] on the [Smart App IDE][ide-app] using "Create via code"
+4. Install the [Smart App][app] on the [Smart App IDE][ide-app] using "Create via code". After saving, "Publish" the Smart App, selecting "for me".
 5. Configure the Smart App (via the Native App; on Android, this must be the Classic version) with the devices you want to share and the Device Handler you just installed as the bridge
 6. Via the Native App, select your MQTT device and watch as MQTT is populated with events from your devices
 
