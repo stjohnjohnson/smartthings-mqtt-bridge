@@ -268,13 +268,13 @@ function parseMQTTMessage (topic, message) {
 
     // Deduplicate only if the incoming message topic is the same as the read state topic
     if (topic === topicReadState) {
-		if (history[topic] === contents) {
+        if (history[topic] === contents) {
             winston.info('Skipping duplicate message from: %s = %s', topic, contents);
             return;
         }
     }
     history[topic] = contents;
-	winston.info('Incoming message from MQTT: %s = %s', topic, contents);
+    winston.info('Incoming message from MQTT: %s = %s', topic, contents);
 
     // If sending level data and the switch is off, don't send anything
     // SmartThings will turn the device on (which is confusing)
@@ -292,24 +292,37 @@ function parseMQTTMessage (topic, message) {
         contents = history[topicLevelCommand];
     }
 
-    request.post({
+    var json = {
+        name: device,
+        type: property,
+        value: contents,
+        //command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
+        command: (pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND]) || false
+    };
+
+    retryPost(json, true);
+}
+
+function retryPost(json, retry) {
+	request.post({
         url: 'http://' + callback,
-        json: {
-            name: device,
-            type: property,
-            value: contents,
-            //command: (!pieces[2] || pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND])
-            command: (pieces[2] && pieces[2] === config.mqtt[SUFFIX_COMMAND]) || false
-        }
+        json: json
     }, function (error, resp) {
         if (error) {
-            // @TODO handle the response from SmartThings
-            winston.error('Error from SmartThings Hub: %s', error.toString());
-            winston.error(JSON.stringify(error, null, 4));
-            winston.error(JSON.stringify(resp, null, 4));
+            if ((error.code === "ETIMEDOUT") && retry) {
+                winston.error('Error connecting SmartThings, retrying');
+                retryPost(json);
+            }
+            else {
+                // @TODO handle the response from SmartThings
+                winston.error('Error from SmartThings Hub: %s', error.toString());
+                winston.error(JSON.stringify(error, null, 4));
+                winston.error(JSON.stringify(resp, null, 4));
+            }
         }
     });
 }
+
 
 // Main flow
 async.series([
