@@ -110,7 +110,8 @@ import groovy.transform.Field
         capability: "capability.contactSensor",
         attributes: [
             "contact"
-        ]
+        ],
+        action: "actionOpenClosed"
     ],
     "doorControl": [
         name: "Door Control",
@@ -228,7 +229,8 @@ import groovy.transform.Field
         capability: "capability.relativeHumidityMeasurement",
         attributes: [
             "humidity"
-        ]
+        ],
+        action: "actionHumiditySensors"
     ],
     "relaySwitch": [
         name: "Relay Switch",
@@ -316,7 +318,8 @@ import groovy.transform.Field
         capability: "capability.temperatureMeasurement",
         attributes: [
             "temperature"
-        ]
+        ],
+        action: "actionTemperatureSensors"
     ],
     "thermostat": [
         name: "Thermostat",
@@ -744,6 +747,26 @@ def actionHeatingThermostat(device, attribute, value) {
 
 def actionThermostatMode(device, attribute, value) {
     device.setThermostatMode(value)
+}
+
+//Temperature Sensors don't have commands but a simulated sensor might hence the hasCommand() check.
+def actionTemperatureSensors(device, attribute, value) {
+    if (device.hasCommand("temperature")) {
+        device.temperature(value as int)
+    }
+    if (device.hasCommand("setTemperature")) {
+        device.setTemperature(value)
+    }
+}
+
+//Humidity Sensors don't have commands but a simulated sensor might hence the hasCommand() check.
+def actionHumiditySensors(device, attribute, value) {
+    if (device.hasCommand("humidity")) {
+        device.humidity(value as int)
+    }
+    if (device.hasCommand("setHumidity")) {
+        device.setHumidity(value as int)
+    }
 }
 
 def actionTimedSession(device, attribute, value) {
