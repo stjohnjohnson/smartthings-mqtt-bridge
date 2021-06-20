@@ -755,7 +755,7 @@ def actionTemperatureSensors(device, attribute, value) {
         device.temperature(value as int)
     }
     if (device.hasCommand("setTemperature")) {
-        device.setTemperature(value as int)
+        device.setTemperature(value)
     }
 }
 
